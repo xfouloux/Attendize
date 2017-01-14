@@ -27,15 +27,16 @@ php-worker:
     - .:/usr/share/nginx/html/attendize
   command: php artisan queue:work --daemon
 db:
-  image: postgres
+  image: mysql
   environment:
-    - POSTGRES_USER=attendize
-    - POSTGRES_PASSWORD=attendize
-    - POSTGRES_DB=attendize
+     MYSQL_USER: attendize
+     MYSQL_PASSWORD: attendize
+     MYSQL_ROOT_PASSWORD: attendize
+     MYSQL_DB: attendize
   ports:
-    - "5433:5432"
+    - "3307:3306"
   volumes:
-    - ./docker/pgdata:/var/lib/postgresql/data
+    - ./docker/mysqldata:/var/lib/mysql
 maildev:
   image: djfarrelly/maildev
   ports:
