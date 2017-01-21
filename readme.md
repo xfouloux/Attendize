@@ -1,3 +1,5 @@
+## This branch is a work in progress and should not be used in production. Many features and broken, incomplete or missing.
+
 <p align="center">
   <img src="https://www.attendize.com/img/logo-dark.png" alt="Attendize"/>
 </p>
