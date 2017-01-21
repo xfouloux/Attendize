@@ -1,15 +1,16 @@
 web:
   build: .
-  dockerfile: Dockerfile-nginx
+  dockerfile: ./docker/nginx/Dockerfile-nginx
   ports:
     - "8080:80"
   links:
     - php
+    - db
   volumes:
     - .:/usr/share/nginx/html/attendize
 php:
   build: .
-  dockerfile: Dockerfile-php
+  dockerfile: ./docker/php/Dockerfile-php
   links:
     - db
     - maildev
@@ -18,7 +19,7 @@ php:
     - .:/usr/share/nginx/html/attendize
 php-worker:
   build: .
-  dockerfile: Dockerfile-php
+  dockerfile: ./docker/php/Dockerfile-php
   links:
     - db
     - maildev
@@ -27,19 +28,23 @@ php-worker:
     - .:/usr/share/nginx/html/attendize
   command: php artisan queue:work --daemon
 db:
-  image: mysql
+  build: .
+  dockerfile: ./docker/mysql/Dockerfile-mysql
   environment:
      MYSQL_USER: attendize
      MYSQL_PASSWORD: attendize
      MYSQL_ROOT_PASSWORD: attendize
      MYSQL_DB: attendize
   ports:
-    - "3307:3306"
+    - "3333:3306"
   volumes:
-    - ./docker/mysqldata:/var/lib/mysql
+    - ./docker/data/mariadb:/var/lib/mysql
 maildev:
   image: djfarrelly/maildev
   ports:
     - "1080:80"
 redis:
-  image: redis
+  build: .
+  dockerfile: ./docker/redis/Dockerfile-redis
+  volumes:
+      - ./docker/data/redis:/data
