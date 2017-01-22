@@ -48,7 +48,6 @@ class QueueHandler
         //2
         $this->orderMailer->sendOrderConfirmation($order);
         //3
-
         $this->orderMailer->sendTickets($order);
 
         $job->delete();

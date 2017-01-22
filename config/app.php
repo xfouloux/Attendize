@@ -160,12 +160,10 @@ return [
         /*
          * Third Party Service Providers...
          */
-        Vinelab\Http\HttpServiceProvider::class,
         Milon\Barcode\BarcodeServiceProvider::class,
         Intervention\Image\ImageServiceProvider::class,
         Maatwebsite\Excel\ExcelServiceProvider::class,
         Laravel\Socialite\SocialiteServiceProvider::class,
-        Nitmedia\Wkhtml2pdf\L5Wkhtml2pdfServiceProvider::class,
         Mews\Purifier\PurifierServiceProvider::class,
         MaxHoffmann\Parsedown\ParsedownServiceProvider::class,
         Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class,
@@ -222,13 +220,11 @@ return [
         'Str'          => Illuminate\Support\Str::class,
         'Utils'        => App\Attendize\Utils::class,
         'Carbon'       => Carbon\Carbon::class,
-        'PDF'          => Nitmedia\Wkhtml2pdf\Facades\Wkhtml2pdf::class,
         'DNS1D'        => Milon\Barcode\Facades\DNS1DFacade::class,
         'DNS2D'        => Milon\Barcode\Facades\DNS2DFacade::class,
         'Image'        => Intervention\Image\Facades\Image::class,
         'Excel'        => Maatwebsite\Excel\Facades\Excel::class,
         'Socialize'    => Laravel\Socialite\Facades\Socialite::class,
-        'HttpClient'   => Vinelab\Http\Facades\Client::class,
         'Purifier'     => Mews\Purifier\Facades\Purifier::class,
         'Markdown'     => MaxHoffmann\Parsedown\ParsedownFacade::class,
         'Omnipay'      => Omnipay\Omnipay::class,
