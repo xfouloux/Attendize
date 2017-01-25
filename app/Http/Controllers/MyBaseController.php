@@ -11,6 +11,9 @@ use View;
 
 class MyBaseController extends Controller
 {
+    const RESPONSE_SUCCESS = 'success';
+    const RESPONSE_ERROR = 'error';
+
     public function __construct()
     {
         /*

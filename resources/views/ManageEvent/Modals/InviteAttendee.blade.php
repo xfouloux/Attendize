@@ -1,5 +1,6 @@
 <div role="dialog"  class="modal fade " style="display: none;">
    {!! Form::open(array('url' => route('postInviteAttendee', array('event_id' => $event->id)), 'class' => 'ajax')) !!}
+    <input type="hidden" name="event_iddd" value="{{ $event->id }}" />
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header text-center">
