@@ -2,8 +2,6 @@
 
 namespace App\Providers;
 
-use App\Attendize\Repositories\EventRepository;
-use App\Models\Event;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider

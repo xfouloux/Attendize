@@ -24,8 +24,8 @@ class OrganiserDashboardController extends MyBaseController
             $calendar_events[] = [
                 'title' => $event->title,
                 'start' => $event->start_date->toIso8601String(),
-                'end'   => $event->end_date->toIso8601String(),
-                'url'   => route('showEventDashboard', [
+                'end' => $event->end_date->toIso8601String(),
+                'url' => route('showEventDashboard', [
                     'event_id' => $event->id
                 ]),
                 'color' => '#4E558F'
@@ -33,7 +33,7 @@ class OrganiserDashboardController extends MyBaseController
         }
 
         $data = [
-            'organiser'       => $organiser,
+            'organiser' => $organiser,
             'upcoming_events' => $upcoming_events,
             'calendar_events' => json_encode($calendar_events),
         ];

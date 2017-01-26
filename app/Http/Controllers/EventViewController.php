@@ -32,8 +32,8 @@ class EventViewController extends Controller
         }
 
         $data = [
-            'event'       => $event,
-            'tickets'     => $event->tickets()->where('is_hidden', 0)->orderBy('sort_order', 'asc')->get(),
+            'event' => $event,
+            'tickets' => $event->tickets()->where('is_hidden', 0)->orderBy('sort_order', 'asc')->get(),
             'is_embedded' => 0,
         ];
         /*
@@ -52,8 +52,8 @@ class EventViewController extends Controller
 
             if ($affiliate_ref) {
                 $affiliate = Affiliate::firstOrNew([
-                    'name'       => $request->get('ref'),
-                    'event_id'   => $event_id,
+                    'name' => $request->get('ref'),
+                    'event_id' => $event_id,
                     'account_id' => $event->account_id,
                 ]);
 
@@ -89,8 +89,8 @@ class EventViewController extends Controller
     public function postContactOrganiser(Request $request, $event_id)
     {
         $rules = [
-            'name'    => 'required',
-            'email'   => ['required', 'email'],
+            'name' => 'required',
+            'email' => ['required', 'email'],
             'message' => ['required'],
         ];
 
@@ -98,7 +98,7 @@ class EventViewController extends Controller
 
         if ($validator->fails()) {
             return response()->json([
-                'status'   => 'error',
+                'status' => 'error',
                 'messages' => $validator->messages()->toArray(),
             ]);
         }
@@ -106,10 +106,10 @@ class EventViewController extends Controller
         $event = Event::findOrFail($event_id);
 
         $data = [
-            'sender_name'     => $request->get('name'),
-            'sender_email'    => $request->get('email'),
+            'sender_name' => $request->get('name'),
+            'sender_email' => $request->get('email'),
             'message_content' => strip_tags($request->get('message')),
-            'event'           => $event,
+            'event' => $event,
         ];
 
         Mail::send('Emails.messageReceived', $data, function ($message) use ($event, $data) {
@@ -120,7 +120,7 @@ class EventViewController extends Controller
         });
 
         return response()->json([
-            'status'  => 'success',
+            'status' => 'success',
             'message' => 'Message Successfully Sent',
         ]);
     }

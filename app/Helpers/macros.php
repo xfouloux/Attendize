@@ -19,9 +19,9 @@ Form::macro('labelWithHelp', function ($name, $value, $options, $help_text) {
     $label = Form::label($name, '%s', $options);
 
     return sprintf($label, $value)
-    . '<a style="margin-left: 4px;font-size: 11px;" href="javascript:showHelp(' . "'" . $help_text . "'" . ');" >'
-    . '<i class="ico ico-question "></i>'
-    . '</a>';
+        . '<a style="margin-left: 4px;font-size: 11px;" href="javascript:showHelp(' . "'" . $help_text . "'" . ');" >'
+        . '<i class="ico ico-question "></i>'
+        . '</a>';
 });
 
 Form::macro('customCheckbox', function ($name, $value, $checked = false, $label = false, $options = []) {
@@ -63,7 +63,7 @@ HTML::macro('sortable_link',
         $sort_order = $sort_order == 'asc' ? 'desc' : 'asc';
 
         $url_params = http_build_query([
-                'sort_by'    => $sort_by,
+                'sort_by' => $sort_by,
                 'sort_order' => $sort_order,
             ] + $url_params);
 

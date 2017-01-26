@@ -14,19 +14,17 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
     use Authenticatable, CanResetPassword, SoftDeletes;
 
     /**
-     * The database table used by the model.
-     *
-     * @var string
-     */
-    protected $table = 'users';
-
-    /**
      * The attributes that should be mutated to dates.
      *
      * @var array $dates
      */
     public $dates = ['deleted_at'];
-
+    /**
+     * The database table used by the model.
+     *
+     * @var string
+     */
+    protected $table = 'users';
     /**
      * The attributes excluded from the model's JSON form.
      *
@@ -52,6 +50,19 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
         'is_parent',
         'remember_token'
     ];
+
+    /**
+     * Boot all of the bootable traits on the model.
+     */
+    public static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($user) {
+            $user->confirmation_code = str_random();
+            $user->api_token = str_random(60);
+        });
+    }
 
     /**
      * The account associated with the user.
@@ -141,18 +152,5 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
     public function getFullNameAttribute()
     {
         return $this->first_name . ' ' . $this->last_name;
-    }
-
-    /**
-     * Boot all of the bootable traits on the model.
-     */
-    public static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($user) {
-            $user->confirmation_code = str_random();
-            $user->api_token = str_random(60);
-        });
     }
 }

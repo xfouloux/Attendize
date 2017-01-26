@@ -32,7 +32,7 @@ class UserLoginController extends Controller
          */
         if ($request->ajax()) {
             return response()->json([
-                'status'      => 'success',
+                'status' => 'success',
                 'redirectUrl' => route('login'),
             ]);
         }

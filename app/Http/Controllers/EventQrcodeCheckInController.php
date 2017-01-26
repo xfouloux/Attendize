@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests;
 use App\Models\Attendee;
 use App\Models\Event;
 use Carbon\Carbon;
@@ -64,7 +63,7 @@ class EventQrcodeCheckInController extends Controller
 
         $relatedAttendesCount = Attendee::where('id', '!=', $attendee->id)
             ->where([
-                'order_id'    => $attendee->order_id,
+                'order_id' => $attendee->order_id,
                 'has_arrived' => false
             ])->count();
 
@@ -77,7 +76,7 @@ class EventQrcodeCheckInController extends Controller
 
         if ($attendee->has_arrived) {
             return response()->json([
-                'status'  => 'error',
+                'status' => 'error',
                 'message' => 'Warning: This attendee has already been checked in at ' . $attendee->arrival_time->format('H:i A, F j') . '.' . $appendedText
             ]);
         }
@@ -85,7 +84,7 @@ class EventQrcodeCheckInController extends Controller
         Attendee::find($attendee->id)->update(['has_arrived' => true, 'arrival_time' => Carbon::now()]);
 
         return response()->json([
-            'status'  => 'success',
+            'status' => 'success',
             'message' => 'Success !<br>Name: ' . $attendee->first_name . ' ' . $attendee->last_name . '<br>Reference: ' . $attendee->reference . '<br>Ticket: ' . $attendee->ticket . '.' . $appendedText
         ]);
     }
@@ -100,9 +99,9 @@ class EventQrcodeCheckInController extends Controller
     public function confirmOrderTickets($event_id, $order_id)
     {
         $updateRowsCount = Attendee::scope()->where([
-            'event_id'     => $event_id,
-            'order_id'     => $order_id,
-            'has_arrived'  => false,
+            'event_id' => $event_id,
+            'order_id' => $order_id,
+            'has_arrived' => false,
             'arrival_time' => Carbon::now(),
         ])
             ->update(['has_arrived' => true, 'arrival_time' => Carbon::now()]);

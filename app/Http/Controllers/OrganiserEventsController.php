@@ -30,11 +30,11 @@ class OrganiserEventsController extends MyBaseController
             : Event::scope()->where('organiser_id', '=', $organiser_id)->orderBy($sort_by, 'desc')->paginate(12);
 
         $data = [
-            'events'    => $events,
+            'events' => $events,
             'organiser' => $organiser,
-            'search'    => [
-                'q'        => $searchQuery ? $searchQuery : '',
-                'sort_by'  => $request->get('sort_by') ? $request->get('sort_by') : '',
+            'search' => [
+                'q' => $searchQuery ? $searchQuery : '',
+                'sort_by' => $request->get('sort_by') ? $request->get('sort_by') : '',
                 'showPast' => $request->get('past'),
             ],
         ];

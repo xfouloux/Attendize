@@ -17,7 +17,6 @@ use Cookie;
 use DB;
 use Illuminate\Http\Request;
 use Log;
-use Omnipay;
 use PDF;
 use PhpSpec\Exception\Exception;
 use Validator;
@@ -61,7 +60,7 @@ class EventCheckoutController extends Controller
 
         if (!$request->has('tickets')) {
             return response()->json([
-                'status'  => 'error',
+                'status' => 'error',
                 'message' => 'No tickets selected',
             ]);
         }
@@ -119,7 +118,7 @@ class EventCheckoutController extends Controller
 
             if ($validator->fails()) {
                 return response()->json([
-                    'status'   => 'error',
+                    'status' => 'error',
                     'messages' => $validator->messages()->toArray(),
                 ]);
             }
@@ -129,12 +128,12 @@ class EventCheckoutController extends Controller
             $organiser_booking_fee = $organiser_booking_fee + ($current_ticket_quantity * $ticket->organiser_booking_fee);
 
             $tickets[] = [
-                'ticket'                => $ticket,
-                'qty'                   => $current_ticket_quantity,
-                'price'                 => ($current_ticket_quantity * $ticket->price),
-                'booking_fee'           => ($current_ticket_quantity * $ticket->booking_fee),
+                'ticket' => $ticket,
+                'qty' => $current_ticket_quantity,
+                'price' => ($current_ticket_quantity * $ticket->price),
+                'booking_fee' => ($current_ticket_quantity * $ticket->booking_fee),
                 'organiser_booking_fee' => ($current_ticket_quantity * $ticket->organiser_booking_fee),
-                'full_price'            => $ticket->price + $ticket->total_booking_fee,
+                'full_price' => $ticket->price + $ticket->total_booking_fee,
             ];
 
             /*
@@ -179,7 +178,7 @@ class EventCheckoutController extends Controller
 
         if (empty($tickets)) {
             return response()->json([
-                'status'  => 'error',
+                'status' => 'error',
                 'message' => 'No tickets selected.',
             ]);
         }
@@ -188,23 +187,23 @@ class EventCheckoutController extends Controller
          * The 'ticket_order_{event_id}' session stores everything we need to complete the transaction.
          */
         session()->set('ticket_order_' . $event->id, [
-            'validation_rules'        => $validation_rules,
-            'validation_messages'     => $validation_messages,
-            'event_id'                => $event->id,
-            'tickets'                 => $tickets,
-            'total_ticket_quantity'   => $total_ticket_quantity,
-            'order_started'           => time(),
-            'expires'                 => $order_expires_time,
-            'reserved_tickets_id'     => $reservedTickets->id,
-            'order_total'             => $order_total,
-            'booking_fee'             => $booking_fee,
-            'organiser_booking_fee'   => $organiser_booking_fee,
-            'total_booking_fee'       => $booking_fee + $organiser_booking_fee,
-            'order_requires_payment'  => (ceil($order_total) == 0) ? false : true,
-            'account_id'              => $event->account->id,
-            'affiliate_referral'      => Cookie::get('affiliate_' . $event_id),
+            'validation_rules' => $validation_rules,
+            'validation_messages' => $validation_messages,
+            'event_id' => $event->id,
+            'tickets' => $tickets,
+            'total_ticket_quantity' => $total_ticket_quantity,
+            'order_started' => time(),
+            'expires' => $order_expires_time,
+            'reserved_tickets_id' => $reservedTickets->id,
+            'order_total' => $order_total,
+            'booking_fee' => $booking_fee,
+            'organiser_booking_fee' => $organiser_booking_fee,
+            'total_booking_fee' => $booking_fee + $organiser_booking_fee,
+            'order_requires_payment' => (ceil($order_total) == 0) ? false : true,
+            'account_id' => $event->account->id,
+            'affiliate_referral' => Cookie::get('affiliate_' . $event_id),
             'account_payment_gateway' => count($event->account->active_payment_gateway) ? $event->account->active_payment_gateway : false,
-            'payment_gateway'         => count($event->account->active_payment_gateway) ? $event->account->active_payment_gateway->payment_gateway : false,
+            'payment_gateway' => count($event->account->active_payment_gateway) ? $event->account->active_payment_gateway->payment_gateway : false,
         ]);
 
         /*
@@ -213,9 +212,9 @@ class EventCheckoutController extends Controller
          */
         if ($request->ajax()) {
             return response()->json([
-                'status'      => 'success',
+                'status' => 'success',
                 'redirectUrl' => route('showEventCheckout', [
-                        'event_id'    => $event_id,
+                        'event_id' => $event_id,
                         'is_embedded' => $this->is_embedded,
                     ]) . '#order_form',
             ]);
@@ -246,9 +245,9 @@ class EventCheckoutController extends Controller
         $secondsToExpire = Carbon::now()->diffInSeconds($order_session['expires']);
 
         $data = $order_session + [
-                'event'           => Event::findorFail($order_session['event_id']),
+                'event' => Event::findorFail($order_session['event_id']),
                 'secondsToExpire' => $secondsToExpire,
-                'is_embedded'     => $this->is_embedded,
+                'is_embedded' => $this->is_embedded,
             ];
 
         if ($this->is_embedded) {
@@ -273,8 +272,8 @@ class EventCheckoutController extends Controller
          */
         if (!session()->get('ticket_order_' . $event_id)) {
             return response()->json([
-                'status'      => 'error',
-                'message'     => 'Your session has expired.',
+                'status' => 'error',
+                'message' => 'Your session has expired.',
                 'redirectUrl' => route('showEventPage', [
                     'event_id' => $event_id,
                 ])
@@ -293,7 +292,7 @@ class EventCheckoutController extends Controller
 
         if (!$order->validate($request->all())) {
             return response()->json([
-                'status'   => 'error',
+                'status' => 'error',
                 'messages' => $order->errors(),
             ]);
         }
@@ -325,10 +324,10 @@ class EventCheckoutController extends Controller
                     ]);
 
                 $transaction_data = [
-                        'amount'      => ($ticket_order['order_total'] + $ticket_order['organiser_booking_fee']),
-                        'currency'    => $event->currency->code,
-                        'description' => 'Order for customer: ' . $request->get('order_email'),
-                    ];
+                    'amount' => ($ticket_order['order_total'] + $ticket_order['organiser_booking_fee']),
+                    'currency' => $event->currency->code,
+                    'description' => 'Order for customer: ' . $request->get('order_email'),
+                ];
 
 
                 switch ($ticket_order['payment_gateway']->id) {
@@ -337,11 +336,11 @@ class EventCheckoutController extends Controller
 
                         $transaction_data += [
                             'cancelUrl' => route('showEventCheckoutPaymentReturn', [
-                                'event_id'             => $event_id,
+                                'event_id' => $event_id,
                                 'is_payment_cancelled' => 1
                             ]),
                             'returnUrl' => route('showEventCheckoutPaymentReturn', [
-                                'event_id'              => $event_id,
+                                'event_id' => $event_id,
                                 'is_payment_successful' => 1
                             ]),
                             'brandName' => isset($ticket_order['account_payment_gateway']->config['brandingName'])
@@ -352,15 +351,16 @@ class EventCheckoutController extends Controller
                     case config('attendize.payment_gateway_stripe'):
                         $token = $request->get('stripeToken');
                         $transaction_data += [
-                            'token'         => $token,
+                            'token' => $token,
                             'receipt_email' => $request->get('order_email'),
                         ];
                         break;
                     case config('attendize.payment_gateway_migs'):
                         $transaction_data += [
-                            'transactionId' => $event_id . date('YmdHis'),       // TODO: Where to generate transaction id?
+                            'transactionId' => $event_id . date('YmdHis'),
+                            // TODO: Where to generate transaction id?
                             'returnUrl' => route('showEventCheckoutPaymentReturn', [
-                                'event_id'              => $event_id,
+                                'event_id' => $event_id,
                                 'is_payment_successful' => 1
                             ]),
 
@@ -373,7 +373,7 @@ class EventCheckoutController extends Controller
                     default:
                         Log::error('No payment gateway configured.');
                         return repsonse()->json([
-                            'status'  => 'error',
+                            'status' => 'error',
                             'message' => 'No payment gateway configured.'
                         ]);
                         break;
@@ -398,16 +398,16 @@ class EventCheckoutController extends Controller
                      * when we return
                      */
                     session()->push('ticket_order_' . $event_id . '.transaction_data', $transaction_data);
-					Log::info("Redirect url: " . $response->getRedirectUrl());
+                    Log::info("Redirect url: " . $response->getRedirectUrl());
 
                     $return = [
-                        'status'       => 'success',
-                        'redirectUrl'  => $response->getRedirectUrl(),
-                        'message'      => 'Redirecting to ' . $ticket_order['payment_gateway']->provider_name
+                        'status' => 'success',
+                        'redirectUrl' => $response->getRedirectUrl(),
+                        'message' => 'Redirecting to ' . $ticket_order['payment_gateway']->provider_name
                     ];
 
                     // GET method requests should not have redirectData on the JSON return string
-                    if($response->getRedirectMethod() == 'POST') {
+                    if ($response->getRedirectMethod() == 'POST') {
                         $return['redirectData'] = $response->getRedirectData();
                     }
 
@@ -416,7 +416,7 @@ class EventCheckoutController extends Controller
                 } else {
                     // display error to customer
                     return response()->json([
-                        'status'  => 'error',
+                        'status' => 'error',
                         'message' => $response->getMessage(),
                     ]);
                 }
@@ -427,7 +427,7 @@ class EventCheckoutController extends Controller
 
             if ($error) {
                 return response()->json([
-                    'status'  => 'error',
+                    'status' => 'error',
                     'message' => $error,
                 ]);
             }
@@ -438,50 +438,6 @@ class EventCheckoutController extends Controller
          * No payment required so go ahead and complete the order
          */
         return $this->completeOrder($event_id);
-
-    }
-
-
-    /**
-     * Attempt to complete a user's payment when they return from
-     * an off-site gateway
-     *
-     * @param Request $request
-     * @param $event_id
-     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
-     */
-    public function showEventCheckoutPaymentReturn(Request $request, $event_id)
-    {
-
-        if ($request->get('is_payment_cancelled') == '1') {
-            session()->flash('message', 'You cancelled your payment. You may try again.');
-            return response()->redirectToRoute('showEventCheckout', [
-                'event_id'             => $event_id,
-                'is_payment_cancelled' => 1,
-            ]);
-        }
-
-        $ticket_order = session()->get('ticket_order_' . $event_id);
-        $gateway = Omnipay::create($ticket_order['payment_gateway']->name);
-
-        $gateway->initialize($ticket_order['account_payment_gateway']->config + [
-                'testMode' => config('attendize.enable_test_payments'),
-            ]);
-
-        $transaction = $gateway->completePurchase($ticket_order['transaction_data'][0]);
-
-        $response = $transaction->send();
-
-        if ($response->isSuccessful()) {
-            session()->push('ticket_order_' . $event_id . '.transaction_id', $response->getTransactionReference());
-            return $this->completeOrder($event_id, false);
-        } else {
-            session()->flash('message', $response->getMessage());
-            return response()->redirectToRoute('showEventCheckout', [
-                'event_id'          => $event_id,
-                'is_payment_failed' => 1,
-            ]);
-        }
 
     }
 
@@ -550,7 +506,7 @@ class EventCheckoutController extends Controller
              */
             $event_stats = EventStats::firstOrNew([
                 'event_id' => $event_id,
-                'date'     => DB::raw('CURRENT_DATE'),
+                'date' => DB::raw('CURRENT_DATE'),
             ]);
             $event_stats->increment('tickets_sold', $ticket_order['total_ticket_quantity']);
 
@@ -628,8 +584,8 @@ class EventCheckoutController extends Controller
                             QuestionAnswer::create([
                                 'answer_text' => $ticket_answer,
                                 'attendee_id' => $attendee->id,
-                                'event_id'    => $event->id,
-                                'account_id'  => $event->account->id,
+                                'event_id' => $event->id,
+                                'account_id' => $event->account->id,
                                 'question_id' => $question->id
                             ]);
 
@@ -660,7 +616,7 @@ class EventCheckoutController extends Controller
             DB::rollBack();
 
             return response()->json([
-                'status'  => 'error',
+                'status' => 'error',
                 'message' => 'Whoops! There was a problem processing your order. Please try again.'
             ]);
 
@@ -670,19 +626,62 @@ class EventCheckoutController extends Controller
 
         if ($return_json) {
             return response()->json([
-                'status'      => 'success',
+                'status' => 'success',
                 'redirectUrl' => route('showOrderDetails', [
-                    'is_embedded'     => $this->is_embedded,
+                    'is_embedded' => $this->is_embedded,
                     'order_reference' => $order->order_reference,
                 ]),
             ]);
         }
 
         return response()->redirectToRoute('showOrderDetails', [
-            'is_embedded'     => $this->is_embedded,
+            'is_embedded' => $this->is_embedded,
             'order_reference' => $order->order_reference,
         ]);
 
+
+    }
+
+    /**
+     * Attempt to complete a user's payment when they return from
+     * an off-site gateway
+     *
+     * @param Request $request
+     * @param $event_id
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
+     */
+    public function showEventCheckoutPaymentReturn(Request $request, $event_id)
+    {
+
+        if ($request->get('is_payment_cancelled') == '1') {
+            session()->flash('message', 'You cancelled your payment. You may try again.');
+            return response()->redirectToRoute('showEventCheckout', [
+                'event_id' => $event_id,
+                'is_payment_cancelled' => 1,
+            ]);
+        }
+
+        $ticket_order = session()->get('ticket_order_' . $event_id);
+        $gateway = Omnipay::create($ticket_order['payment_gateway']->name);
+
+        $gateway->initialize($ticket_order['account_payment_gateway']->config + [
+                'testMode' => config('attendize.enable_test_payments'),
+            ]);
+
+        $transaction = $gateway->completePurchase($ticket_order['transaction_data'][0]);
+
+        $response = $transaction->send();
+
+        if ($response->isSuccessful()) {
+            session()->push('ticket_order_' . $event_id . '.transaction_id', $response->getTransactionReference());
+            return $this->completeOrder($event_id, false);
+        } else {
+            session()->flash('message', $response->getMessage());
+            return response()->redirectToRoute('showEventCheckout', [
+                'event_id' => $event_id,
+                'is_payment_failed' => 1,
+            ]);
+        }
 
     }
 
@@ -702,9 +701,9 @@ class EventCheckoutController extends Controller
         }
 
         $data = [
-            'order'       => $order,
-            'event'       => $order->event,
-            'tickets'     => $order->event->tickets,
+            'order' => $order,
+            'event' => $order->event,
+            'tickets' => $order->event->tickets,
             'is_embedded' => $this->is_embedded,
         ];
 
@@ -731,12 +730,12 @@ class EventCheckoutController extends Controller
         }
 
         $data = [
-            'order'     => $order,
-            'event'     => $order->event,
-            'tickets'   => $order->event->tickets,
+            'order' => $order,
+            'event' => $order->event,
+            'tickets' => $order->event->tickets,
             'attendees' => $order->attendees,
-            'css'       => file_get_contents(public_path('assets/stylesheet/ticket.css')),
-            'image'     => base64_encode(file_get_contents(public_path($order->event->organiser->full_logo_path))),
+            'css' => file_get_contents(public_path('assets/stylesheet/ticket.css')),
+            'image' => base64_encode(file_get_contents(public_path($order->event->organiser->full_logo_path))),
 
         ];
 

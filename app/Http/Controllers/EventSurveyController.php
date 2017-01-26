@@ -34,11 +34,11 @@ class EventSurveyController extends MyBaseController
         ]);
 
         $data = [
-            'event'      => $event,
-            'questions'  => $event->questions->sortBy('sort_order'),
+            'event' => $event,
+            'questions' => $event->questions->sortBy('sort_order'),
             'sort_order' => 'asc',
-            'sort_by'    => 'title',
-            'q'          => '',
+            'sort_by' => 'title',
+            'q' => '',
         ];
 
         return view('ManageEvent.Surveys', $data);
@@ -54,7 +54,7 @@ class EventSurveyController extends MyBaseController
         $event = Event::scope()->findOrFail($event_id);
 
         return view('ManageEvent.Modals.CreateQuestion', [
-            'event'          => $event,
+            'event' => $event,
             'question_types' => QuestionType::all(),
         ]);
     }
@@ -102,8 +102,8 @@ class EventSurveyController extends MyBaseController
         session()->flash('message', 'Successfully Created Question');
 
         return response()->json([
-            'status'      => 'success',
-            'message'     => 'Refreshing..',
+            'status' => 'success',
+            'message' => 'Refreshing..',
             'redirectUrl' => '',
         ]);
     }
@@ -123,8 +123,8 @@ class EventSurveyController extends MyBaseController
         $event = Event::scope()->findOrFail($event_id);
 
         $data = [
-            'question'       => $question,
-            'event'          => $event,
+            'question' => $question,
+            'event' => $event,
             'question_types' => QuestionType::all(),
         ];
 
@@ -181,8 +181,8 @@ class EventSurveyController extends MyBaseController
         session()->flash('message', 'Successfully Edited Question');
 
         return response()->json([
-            'status'      => 'success',
-            'message'     => 'Refreshing..',
+            'status' => 'success',
+            'message' => 'Refreshing..',
             'redirectUrl' => '',
         ]);
 
@@ -208,15 +208,15 @@ class EventSurveyController extends MyBaseController
             session()->flash('message', 'Question Successfully Deleted');
 
             return response()->json([
-                'status'      => 'success',
-                'message'     => 'Refreshing..',
+                'status' => 'success',
+                'message' => 'Refreshing..',
                 'redirectUrl' => '',
             ]);
         }
 
         return response()->json([
-            'status'  => 'error',
-            'id'      => $question->id,
+            'status' => 'error',
+            'id' => $question->id,
             'message' => 'This question can\'t be deleted.',
         ]);
     }
@@ -240,7 +240,7 @@ class EventSurveyController extends MyBaseController
             ->get();
 
         $data = [
-            'answers'  => $answers,
+            'answers' => $answers,
             'question' => $question,
         ];
 
@@ -295,15 +295,15 @@ class EventSurveyController extends MyBaseController
 
         if ($question->save()) {
             return response()->json([
-                'status'  => 'success',
+                'status' => 'success',
                 'message' => 'Question Successfully Updated',
-                'id'      => $question->id,
+                'id' => $question->id,
             ]);
         }
 
         return response()->json([
-            'status'  => 'error',
-            'id'      => $question->id,
+            'status' => 'error',
+            'id' => $question->id,
             'message' => 'Whoops! Looks like something went wrong. Please try again.',
         ]);
     }
@@ -328,7 +328,7 @@ class EventSurveyController extends MyBaseController
         }
 
         return response()->json([
-            'status'  => 'success',
+            'status' => 'success',
             'message' => 'Question Order Successfully Updated',
         ]);
     }

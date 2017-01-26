@@ -7,6 +7,7 @@ use DB;
 
 class EventStats extends \Illuminate\Database\Eloquent\Model
 {
+    public static $unguarded = true;
     /**
      * Indicates if the model should be timestamped.
      *
@@ -14,15 +15,13 @@ class EventStats extends \Illuminate\Database\Eloquent\Model
      */
     public $timestamps = false;
 
-    public static $unguarded = true;
-
     /**
      * @todo This shouldn't be in a view.
      * Update the amount of revenue a ticket has earned.
      *
-     * @param int   $ticket_id
+     * @param int $ticket_id
      * @param float $amount
-     * @param bool  $deduct
+     * @param bool $deduct
      *
      * @return bool
      */
@@ -50,10 +49,10 @@ class EventStats extends \Illuminate\Database\Eloquent\Model
     {
         $stats = $this->firstOrNew([
             'event_id' => $event_id,
-            'date'     => DB::raw('CURRENT_DATE'),
+            'date' => DB::raw('CURRENT_DATE'),
         ]);
 
-        $cookie_name = 'visitTrack_'.$event_id.'_'.date('dmy');
+        $cookie_name = 'visitTrack_' . $event_id . '_' . date('dmy');
 
         if (!Cookie::get($cookie_name)) {
             Cookie::queue($cookie_name, true, 60 * 24 * 14);
@@ -74,7 +73,7 @@ class EventStats extends \Illuminate\Database\Eloquent\Model
     {
         $stats = $this->firstOrNew([
             'event_id' => $event_id,
-            'date'     => DB::raw('CURRENT_DATE'),
+            'date' => DB::raw('CURRENT_DATE'),
         ]);
 
         $stats->sales_volume = $stats->sales_volume + $amount;
@@ -94,7 +93,7 @@ class EventStats extends \Illuminate\Database\Eloquent\Model
     {
         $stats = $this->firstOrNew([
             'event_id' => $event_id,
-            'date'     => DB::raw('CURRENT_DATE'),
+            'date' => DB::raw('CURRENT_DATE'),
         ]);
 
         $stats->increment('tickets_sold', $count);

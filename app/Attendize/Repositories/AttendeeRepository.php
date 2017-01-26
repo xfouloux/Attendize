@@ -29,8 +29,7 @@ class AttendeeRepository extends Repository implements RepositoryInterface
         $searchQuery,
         $sortBy = null,
         $sortOrder = self::DEFAULT_SORT_ORDER
-    )
-    {
+    ) {
         $attendees = $this->model
             ->withoutCancelled()
             ->join('orders', 'orders.id', '=', 'attendees.order_id')

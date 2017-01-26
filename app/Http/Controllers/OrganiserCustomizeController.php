@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Organiser;
 use File;
-use Image;
 use Illuminate\Http\Request;
+use Image;
 use Validator;
 
 class OrganiserCustomizeController extends MyBaseController
@@ -38,18 +38,18 @@ class OrganiserCustomizeController extends MyBaseController
 
         if (!$organiser->validate($request->all())) {
             return response()->json([
-                'status'   => 'error',
+                'status' => 'error',
                 'messages' => $organiser->errors(),
             ]);
         }
 
-        $organiser->name                  = $request->get('name');
-        $organiser->about                 = $request->get('about');
+        $organiser->name = $request->get('name');
+        $organiser->about = $request->get('about');
         $organiser->google_analytics_code = $request->get('google_analytics_code');
-        $organiser->email                 = $request->get('email');
+        $organiser->email = $request->get('email');
         $organiser->enable_organiser_page = $request->get('enable_organiser_page');
-        $organiser->facebook              = $request->get('facebook');
-        $organiser->twitter               = $request->get('twitter');
+        $organiser->facebook = $request->get('facebook');
+        $organiser->twitter = $request->get('twitter');
 
         if ($request->get('remove_current_image') == '1') {
             $organiser->logo_path = '';
@@ -64,7 +64,7 @@ class OrganiserCustomizeController extends MyBaseController
         session()->flash('message', 'Successfully Updated Organiser');
 
         return response()->json([
-            'status'      => 'success',
+            'status' => 'success',
             'redirectUrl' => '',
         ]);
     }
@@ -81,13 +81,13 @@ class OrganiserCustomizeController extends MyBaseController
         $event = Organiser::scope()->findOrFail($organiser_id);
 
         $rules = [
-            'page_bg_color'        => ['required'],
+            'page_bg_color' => ['required'],
             'page_header_bg_color' => ['required'],
-            'page_text_color'      => ['required'],
+            'page_text_color' => ['required'],
         ];
         $messages = [
             'page_header_bg_color.required' => 'Please enter a header background color.',
-            'page_bg_color.required'        => 'Please enter a background color.',
+            'page_bg_color.required' => 'Please enter a background color.',
         ];
 
         $validator = Validator::make($request->all(), $rules, $messages);
@@ -99,14 +99,14 @@ class OrganiserCustomizeController extends MyBaseController
             ]);
         }
 
-        $event->page_bg_color        = $request->get('page_bg_color');
+        $event->page_bg_color = $request->get('page_bg_color');
         $event->page_header_bg_color = $request->get('page_header_bg_color');
-        $event->page_text_color      = $request->get('page_text_color');
+        $event->page_text_color = $request->get('page_text_color');
 
         $event->save();
 
         return response()->json([
-            'status'  => 'success',
+            'status' => 'success',
             'message' => 'Organiser Design Successfully Updated',
         ]);
     }

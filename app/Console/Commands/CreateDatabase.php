@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use DB;
+use Illuminate\Console\Command;
 
 class CreateDatabase extends Command
 {
@@ -29,6 +29,6 @@ class CreateDatabase extends Command
      */
     public function handle()
     {
-           DB::statement('CREATE DATABASE IF NOT EXISTS '.$this->argument('db_name').";");
+        DB::statement('CREATE DATABASE IF NOT EXISTS ' . $this->argument('db_name') . ";");
     }
 }

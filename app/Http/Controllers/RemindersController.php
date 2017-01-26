@@ -31,16 +31,6 @@ class RemindersController extends Controller
     }
 
     /**
-     * Get the e-mail subject line to be used for the reset link email.
-     *
-     * @return string
-     */
-    protected function getEmailSubject()
-    {
-        return isset($this->subject) ? $this->subject : 'Your Password Reset Link';
-    }
-
-    /**
      * Display the password reminder view.
      *
      * @return Response
@@ -73,6 +63,16 @@ class RemindersController extends Controller
     }
 
     /**
+     * Get the e-mail subject line to be used for the reset link email.
+     *
+     * @return string
+     */
+    protected function getEmailSubject()
+    {
+        return isset($this->subject) ? $this->subject : 'Your Password Reset Link';
+    }
+
+    /**
      * Display the password reset view for the given token.
      *
      * @param string $token
@@ -96,8 +96,8 @@ class RemindersController extends Controller
     public function postReset(Request $request)
     {
         $this->validate($request, [
-            'token'    => 'required',
-            'email'    => 'required',
+            'token' => 'required',
+            'email' => 'required',
             'password' => 'required|confirmed',
         ]);
 

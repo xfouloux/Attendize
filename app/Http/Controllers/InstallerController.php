@@ -105,16 +105,16 @@ class InstallerController extends Controller
 
             if ($is_db_valid === 'yes') {
                 return [
-                    'status'  => 'success',
+                    'status' => 'success',
                     'message' => 'Success, Your connection works!',
-                    'test'    => 1,
+                    'test' => 1,
                 ];
             }
 
             return [
-                'status'  => 'error',
+                'status' => 'error',
                 'message' => 'Unable to connect! Please check your settings',
-                'test'    => 1,
+                'test' => 1,
             ];
         }
 

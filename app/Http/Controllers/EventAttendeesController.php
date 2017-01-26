@@ -14,11 +14,8 @@ use App\Attendize\Services\MessageAttendeeService;
 use App\Attendize\Services\MessageMultipleAttendeeService;
 use App\Jobs\GenerateTicket;
 use App\Jobs\SendAttendeeTicket;
-use App\Jobs\SendMessageToAttendees;
 use App\Models\Attendee;
-use App\Models\Event;
 use App\Models\EventStats;
-use App\Models\Message;
 use Auth;
 use Config;
 use DB;
@@ -252,7 +249,6 @@ class EventAttendeesController extends MyBaseController
 
         return view('ManageEvent.Modals.MessageAttendees', $data);
     }
-
 
 
     /**

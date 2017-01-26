@@ -42,7 +42,7 @@ class OrganiserController extends MyBaseController
 
         if (!$organiser->validate($request->all())) {
             return response()->json([
-                'status'   => 'error',
+                'status' => 'error',
                 'messages' => $organiser->errors(),
             ]);
         }
@@ -63,11 +63,11 @@ class OrganiserController extends MyBaseController
         session()->flash('message', 'Successfully Created Organiser.');
 
         return response()->json([
-            'status'      => 'success',
-            'message'     => 'Refreshing..',
+            'status' => 'success',
+            'message' => 'Refreshing..',
             'redirectUrl' => route('showOrganiserEvents', [
                 'organiser_id' => $organiser->id,
-                'first_run'    => 1
+                'first_run' => 1
             ]),
         ]);
     }

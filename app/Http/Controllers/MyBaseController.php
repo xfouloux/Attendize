@@ -20,16 +20,16 @@ class MyBaseController extends Controller
          * Set up JS across all views
          */
         JavaScript::put([
-            'User'                => [
-                'full_name'    => Auth::user()->full_name,
-                'email'        => Auth::user()->email,
+            'User' => [
+                'full_name' => Auth::user()->full_name,
+                'email' => Auth::user()->email,
                 'is_confirmed' => Auth::user()->is_confirmed,
             ],
             /*
              * @todo These should be user selectable
              */
-            'DateFormat'          => 'dd-MM-yyyy',
-            'DateTimeFormat'      => 'dd-MM-yyyy hh:mm',
+            'DateFormat' => 'dd-MM-yyyy',
+            'DateTimeFormat' => 'dd-MM-yyyy hh:mm',
             'GenericErrorMessage' => 'Whoops! An unknown error has occurred. Please try again or contact support if the problem persists.'
         ]);
 
@@ -57,8 +57,8 @@ class MyBaseController extends Controller
         }
 
         return array_merge([
-            'event'      => $event,
-            'questions'  => $event->questions()->get(),
+            'event' => $event,
+            'questions' => $event->questions()->get(),
             'image_path' => $image_path,
         ], $additional_data);
     }

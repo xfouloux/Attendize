@@ -13,7 +13,6 @@ use Excel;
 use Illuminate\Http\Request;
 use Log;
 use Mail;
-use Omnipay;
 use Validator;
 
 class EventOrdersController extends MyBaseController
@@ -59,11 +58,11 @@ class EventOrdersController extends MyBaseController
         }
 
         $data = [
-            'orders'     => $orders,
-            'event'      => $event,
-            'sort_by'    => $sort_by,
+            'orders' => $orders,
+            'event' => $event,
+            'sort_by' => $sort_by,
             'sort_order' => $sort_order,
-            'q'          => $searchQuery ? $searchQuery : '',
+            'q' => $searchQuery ? $searchQuery : '',
         ];
 
         return view('ManageEvent.Orders', $data);
@@ -97,10 +96,10 @@ class EventOrdersController extends MyBaseController
         $order = Order::scope()->find($order_id);
 
         $data = [
-            'order'     => $order,
-            'event'     => $order->event(),
+            'order' => $order,
+            'event' => $order->event(),
             'attendees' => $order->attendees()->withoutCancelled()->get(),
-            'modal_id'  => $request->get('modal_id'),
+            'modal_id' => $request->get('modal_id'),
         ];
 
         return view('ManageEvent.Modals.EditOrder', $data);
@@ -118,10 +117,10 @@ class EventOrdersController extends MyBaseController
         $order = Order::scope()->find($order_id);
 
         $data = [
-            'order'     => $order,
-            'event'     => $order->event(),
+            'order' => $order,
+            'event' => $order->event(),
             'attendees' => $order->attendees()->withoutCancelled()->get(),
-            'modal_id'  => $request->get('modal_id'),
+            'modal_id' => $request->get('modal_id'),
         ];
 
         return view('ManageEvent.Modals.CancelOrder', $data);
@@ -141,7 +140,7 @@ class EventOrdersController extends MyBaseController
         $this->dispatch(new SendOrderTickets($order));
 
         return response()->json([
-            'status'      => 'success',
+            'status' => 'success',
             'redirectUrl' => '',
         ]);
     }
@@ -165,7 +164,7 @@ class EventOrdersController extends MyBaseController
 
         if ($validator->fails()) {
             return response()->json([
-                'status'   => 'error',
+                'status' => 'error',
                 'messages' => $validator->messages()->toArray(),
             ]);
         }
@@ -182,7 +181,7 @@ class EventOrdersController extends MyBaseController
         \Session::flash('message', 'The order has been updated');
 
         return response()->json([
-            'status'      => 'success',
+            'status' => 'success',
             'redirectUrl' => '',
         ]);
     }
@@ -208,7 +207,7 @@ class EventOrdersController extends MyBaseController
 
         if ($validator->fails()) {
             return response()->json([
-                'status'   => 'error',
+                'status' => 'error',
                 'messages' => $validator->messages()->toArray(),
             ]);
         }
@@ -248,7 +247,7 @@ class EventOrdersController extends MyBaseController
 
                     $request = $gateway->refund([
                         'transactionReference' => $order->transaction_id,
-                        'amount'               => $refund_amount,
+                        'amount' => $refund_amount,
                         'refundApplicationFee' => floatval($order->booking_fee) > 0 ? true : false,
                     ]);
 
@@ -279,7 +278,7 @@ class EventOrdersController extends MyBaseController
 
             if ($error_message) {
                 return response()->json([
-                    'status'  => 'success',
+                    'status' => 'success',
                     'message' => $error_message,
                 ]);
             }
@@ -298,10 +297,11 @@ class EventOrdersController extends MyBaseController
                 $attendee->is_cancelled = 1;
                 $attendee->save();
 
-                $eventStats = EventStats::where('event_id', $attendee->event_id)->where('date', $attendee->created_at->format('Y-m-d'))->first();
-                if($eventStats){
-                    $eventStats->decrement('tickets_sold',  1);
-                    $eventStats->decrement('sales_volume',  $attendee->ticket->price);
+                $eventStats = EventStats::where('event_id', $attendee->event_id)->where('date',
+                    $attendee->created_at->format('Y-m-d'))->first();
+                if ($eventStats) {
+                    $eventStats->decrement('tickets_sold', 1);
+                    $eventStats->decrement('sales_volume', $attendee->ticket->price);
                 }
             }
         }
@@ -310,7 +310,7 @@ class EventOrdersController extends MyBaseController
             (!$refund_amount && !$attendees) ? 'Nothing To Do' : 'Successfully ' . ($refund_order ? ' Refunded Order' : ' ') . ($attendees && $refund_order ? ' & ' : '') . ($attendees ? 'Cancelled Attendee(s)' : ''));
 
         return response()->json([
-            'status'      => 'success',
+            'status' => 'success',
             'redirectUrl' => '',
         ]);
     }
@@ -412,7 +412,7 @@ class EventOrdersController extends MyBaseController
 
         if ($validator->fails()) {
             return response()->json([
-                'status'   => 'error',
+                'status' => 'error',
                 'messages' => $validator->messages()->toArray(),
             ]);
         }
@@ -420,11 +420,11 @@ class EventOrdersController extends MyBaseController
         $order = Attendee::scope()->findOrFail($order_id);
 
         $data = [
-            'order'           => $order,
+            'order' => $order,
             'message_content' => $request->get('message'),
-            'subject'         => $request->get('subject'),
-            'event'           => $order->event,
-            'email_logo'      => $order->event->organiser->full_logo_path,
+            'subject' => $request->get('subject'),
+            'event' => $order->event,
+            'email_logo' => $order->event->organiser->full_logo_path,
         ];
 
         Mail::send('Emails.messageReceived', $data, function ($message) use ($order, $data) {
@@ -445,7 +445,7 @@ class EventOrdersController extends MyBaseController
         }
 
         return response()->json([
-            'status'  => 'success',
+            'status' => 'success',
             'message' => 'Message Successfully Sent',
         ]);
     }

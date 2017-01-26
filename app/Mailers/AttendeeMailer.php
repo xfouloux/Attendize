@@ -50,11 +50,11 @@ class AttendeeMailer extends Mailer
         foreach ($attendees as $attendee) {
 
             $data = [
-                'attendee'        => $attendee,
-                'event'           => $event,
+                'attendee' => $attendee,
+                'event' => $event,
                 'message_content' => $message_object->message,
-                'subject'         => $message_object->subject,
-                'email_logo'      => $attendee->event->organiser->full_logo_path,
+                'subject' => $message_object->subject,
+                'email_logo' => $attendee->event->organiser->full_logo_path,
             ];
 
             Mail::send('Emails.messageReceived', $data, function ($message) use ($attendee, $data) {
