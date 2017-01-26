@@ -7,8 +7,11 @@ use App\Attendize\Repositories\EventRepository;
 use App\Attendize\Requests\ImportAttendeeRequest;
 use App\Attendize\Requests\InviteAttendeeRequest;
 use App\Attendize\Requests\MessageAttendeeRequest;
+use App\Attendize\Requests\MessageMultipleAttendeeRequest;
 use App\Attendize\Services\ImportAttendeeService;
 use App\Attendize\Services\InviteAttendeeService;
+use App\Attendize\Services\MessageAttendeeService;
+use App\Attendize\Services\MessageMultipleAttendeeService;
 use App\Jobs\GenerateTicket;
 use App\Jobs\SendAttendeeTicket;
 use App\Jobs\SendMessageToAttendees;
@@ -36,8 +39,7 @@ class EventAttendeesController extends MyBaseController
     public function __construct(
         AttendeeRepository $attendeeRepository,
         EventRepository $eventRepository
-    )
-    {
+    ) {
         $this->attendeeRepository = $attendeeRepository;
         $this->eventRepository = $eventRepository;
 
@@ -112,12 +114,11 @@ class EventAttendeesController extends MyBaseController
      */
     public function postInviteAttendee(InviteAttendeeRequest $request, InviteAttendeeService $action, $eventId)
     {
-        if ($action->make($request))
-        {
+        if ($action->make($request)) {
             session()->flash('message', 'Attendee Successfully Invited');
 
             return response()->json([
-                'status'      => 'success',
+                'status' => self::RESPONSE_SUCCESS,
                 'redirectUrl' => route('showEventAttendees', [
                     'event_id' => $eventId,
                 ]),
@@ -131,13 +132,12 @@ class EventAttendeesController extends MyBaseController
     }
 
     /**
-     * Show the 'Import Attendee' modal
+     * Show import attendee modal
      *
-     * @param Request $request
      * @param $event_id
-     * @return string|View
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View|string
      */
-    public function showImportAttendee(Request $request, $event_id)
+    public function showImportAttendee($event_id)
     {
         $event = $this->eventRepository->find($event_id);
 
@@ -182,10 +182,8 @@ class EventAttendeesController extends MyBaseController
     }
 
     /**
-     * Show the printable attendee list
-     *
      * @param $event_id
-     * @return View
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
     public function showPrintAttendees($event_id)
     {
@@ -198,11 +196,10 @@ class EventAttendeesController extends MyBaseController
     /**
      * Show the 'Message Attendee' modal
      *
-     * @param Request $request
      * @param $attendee_id
      * @return View
      */
-    public function showMessageAttendee(Request $request, $attendee_id)
+    public function showMessageAttendee($attendee_id)
     {
         $attendee = $this->attendeeRepository->find($attendee_id);
 
@@ -215,103 +212,67 @@ class EventAttendeesController extends MyBaseController
     }
 
     /**
-     * Send a message to an attendee
+     * Send message to attendee
      *
-     * @param Request $request
-     * @param $attendee_id
-     * @return mixed
+     * @param MessageAttendeeRequest $request
+     * @param MessageAttendeeService $attendeeService
+     * @param $attendeeId
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function postMessageAttendee(MessageAttendeeRequest $request, $attendee_id)
-    {
-        $attendee = $this->attendeeRepository->find($attendee_id);
-
-        $data = [
-            'attendee' => $attendee,
-            'message_content' => $request->get('message'),
-            'subject' => $request->get('subject'),
-            'event' => $attendee->event,
-            'email_logo' => $attendee->event->organiser->full_logo_path,
-        ];
-
-        //@todo move this to the SendAttendeeMessage Job
-        Mail::send('Emails.messageReceived', $data, function ($message) use ($attendee, $data) {
-            $message->to($attendee->email, $attendee->full_name)
-                ->from(config('attendize.outgoing_email_noreply'), $attendee->event->organiser->name)
-                ->replyTo($attendee->event->organiser->email, $attendee->event->organiser->name)
-                ->subject($data['subject']);
-        });
-
-        /* Could bcc in the above? */
-        if ($request->get('send_copy') == '1') {
-            Mail::send('Emails.messageReceived', $data, function ($message) use ($attendee, $data) {
-                $message->to($attendee->event->organiser->email, $attendee->event->organiser->name)
-                    ->from(config('attendize.outgoing_email_noreply'), $attendee->event->organiser->name)
-                    ->replyTo($attendee->event->organiser->email, $attendee->event->organiser->name)
-                    ->subject($data['subject'] . '[ORGANISER COPY]');
-            });
+    public function postMessageAttendee(
+        MessageAttendeeRequest $request,
+        MessageAttendeeService $attendeeService,
+        $attendeeId
+    ) {
+        if ($attendeeService->make($request, $attendeeId)) {
+            return response()->json([
+                'status' => self::RESPONSE_SUCCESS,
+                'message' => __('Message Successfully Sent'),
+            ]);
         }
 
         return response()->json([
-            'status' => 'success',
-            'message' => 'Message Successfully Sent',
+            'status' => self::RESPONSE_ERROR,
+            'message' => __('Message failed to send'),
         ]);
     }
 
     /**
-     * Shows the 'Message Attendees' modal
+     * Show message attendee modal
      *
      * @param $event_id
-     * @return View
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
-    public function showMessageAttendees(Request $request, $event_id)
+    public function showMessageAttendees($event_id)
     {
         $data = [
             'event' => $this->eventRepository->find($event_id),
-            'tickets' => $this->eventRepository->findEvent::scope()->find($event_id)->tickets()->pluck('title', 'id')->toArray(),
+            'tickets' => $this->eventRepository->find($event_id)->tickets()->pluck('title', 'id')->toArray(),
         ];
 
         return view('ManageEvent.Modals.MessageAttendees', $data);
     }
 
+
+
     /**
-     * Send a message to attendees
+     * Sends a message to attendees
      *
-     * @param Request $request
-     * @param $event_id
-     * @return mixed
+     * @param MessageMultipleAttendeeRequest $request
+     * @param MessageMultipleAttendeeService $service
+     * @param $eventId
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function postMessageAttendees(Request $request, $event_id)
-    {
-        $rules = [
-            'subject' => 'required',
-            'message' => 'required',
-            'recipients' => 'required',
-        ];
-
-        $validator = Validator::make($request->all(), $rules);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'status' => 'error',
-                'messages' => $validator->messages()->toArray(),
-            ]);
-        }
-
-        $message = Message::createNew();
-        $message->message = $request->get('message');
-        $message->subject = $request->get('subject');
-        $message->recipients = ($request->get('recipients') == 'all') ? 'all' : $request->get('recipients');
-        $message->event_id = $event_id;
-        $message->save();
-
-        /*
-         * Queue the emails
-         */
-        $this->dispatch(new SendMessageToAttendees($message));
+    public function postMessageAttendees(
+        MessageMultipleAttendeeRequest $request,
+        MessageMultipleAttendeeService $service,
+        $eventId
+    ) {
+        $service->make($request, $eventId);
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Message Successfully Sent',
+            'message' => __('There was an error sending the message'),
         ]);
     }
 
@@ -509,7 +470,8 @@ class EventAttendeesController extends MyBaseController
         $attendee->is_cancelled = 1;
         $attendee->save();
 
-        $eventStats = EventStats::where('event_id', $attendee->event_id)->where('date', $attendee->created_at->format('Y-m-d'))->first();
+        $eventStats = EventStats::where('event_id', $attendee->event_id)->where('date',
+            $attendee->created_at->format('Y-m-d'))->first();
         if ($eventStats) {
             $eventStats->decrement('tickets_sold', 1);
             $eventStats->decrement('sales_volume', $attendee->ticket->price);
