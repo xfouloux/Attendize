@@ -2,7 +2,7 @@
 
 namespace App\Attendize\Requests;
 
-use Auth;
+use Illuminate\Support\Facades\Auth;
 
 class InviteAttendeeRequest extends BaseRequest
 {

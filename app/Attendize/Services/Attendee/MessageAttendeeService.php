@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Attendize\Services;
+namespace App\Attendize\Services\Attendee;
 
 use App\Http\Requests\Request;
 
