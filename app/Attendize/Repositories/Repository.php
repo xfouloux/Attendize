@@ -17,7 +17,7 @@ abstract class Repository
 
     public function find($id)
     {
-        return ($this->model)::scope()->findOrfail($id);
+        return $this->model->scope()->findOrfail($id);
     }
 
     /**
