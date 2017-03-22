@@ -132,18 +132,6 @@ class MyBaseModel extends \Illuminate\Database\Eloquent\Model
      */
     public function scopeScope($query, $accountId = false)
     {
-
-        /*
-         * GOD MODE - DON'T UNCOMMENT!
-         * returning $query before adding the account_id condition will let you
-         * browse all events etc. in the system.
-         * //return  $query;
-         */
-
-        if (!$accountId) {
-            $accountId = Auth::user()->account_id;
-        }
-
         $table = $this->getTable();
 
         $query->where(function ($query) use ($accountId, $table) {
