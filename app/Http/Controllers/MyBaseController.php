@@ -16,9 +16,6 @@ class MyBaseController extends Controller
 
     public function __construct()
     {
-        /*
-         * Set up JS across all views
-         */
         JavaScript::put([
             'User' => [
                 'full_name' => Auth::user()->full_name,
@@ -45,7 +42,7 @@ class MyBaseController extends Controller
      * @param int $event_id
      * @param array $additional_data
      *
-     * @return arrau
+     * @return array
      */
     public function getEventViewData($event_id, $additional_data = [])
     {

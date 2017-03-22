@@ -4,10 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Attendize\Repositories\AttendeeRepository;
 use App\Attendize\Repositories\EventRepository;
-use App\Attendize\Requests\ImportAttendeeRequest;
-use App\Attendize\Requests\InviteAttendeeRequest;
-use App\Attendize\Requests\MessageAttendeeRequest;
-use App\Attendize\Requests\MessageMultipleAttendeeRequest;
+use App\Attendize\Requests\Attendee\ImportAttendeeRequest;
+use App\Attendize\Requests\Attendee\InviteAttendeeRequest;
+use App\Attendize\Requests\Attendee\MessageAttendeeRequest;
+use App\Attendize\Requests\Attendee\MessageMultipleAttendeeRequest;
 use App\Attendize\Services\Attendee\ImportAttendeeService;
 use App\Attendize\Services\Attendee\InviteAttendeeService;
 use App\Attendize\Services\Attendee\MessageAttendeeService;
@@ -16,16 +16,16 @@ use App\Jobs\GenerateTicket;
 use App\Jobs\SendAttendeeTicket;
 use App\Models\Attendee;
 use App\Models\EventStats;
-use Auth;
-use Config;
-use DB;
-use Excel;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
-use Log;
-use Mail;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Omnipay\Omnipay;
+use Illuminate\Validation\Validator;
 use PDF;
-use Validator;
+
 
 class EventAttendeesController extends MyBaseController
 {
@@ -47,7 +47,7 @@ class EventAttendeesController extends MyBaseController
      * Show the attendees list
      *
      * @param Request $request
-     * @param $event_id
+     * @param int $event_id
      * @return View
      */
     public function showAttendees(Request $request, $event_id)
@@ -81,7 +81,7 @@ class EventAttendeesController extends MyBaseController
      * Show the 'Invite Attendee' modal
      *
      * @param Request $request
-     * @param $eventId
+     * @param int $eventId
      * @return string|View
      */
     public function showInviteAttendee(Request $request, $eventId)
@@ -101,15 +101,14 @@ class EventAttendeesController extends MyBaseController
     /**
      * @param InviteAttendeeRequest $request
      * @param InviteAttendeeService $inviteAttendeeService
-     * @param $eventId
+     * @param int $eventId
      * @return \Illuminate\Http\JsonResponse
      */
     public function postInviteAttendee(
         InviteAttendeeRequest $request,
         InviteAttendeeService $inviteAttendeeService,
         $eventId
-    )
-    {
+    ) {
         if ($inviteAttendeeService->handle($request)) {
             session()->flash('message', __('Attendee Successfully Invited'));
 
@@ -127,20 +126,14 @@ class EventAttendeesController extends MyBaseController
         ]);
     }
 
-    /**
-     * Show import attendee modal
-     *
-     * @param $event_id
+    /***
+     * @param int $event_id
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View|string
      */
     public function showImportAttendee($event_id)
     {
         $event = $this->eventRepository->find($event_id);
 
-        /*
-         * If there are no tickets then we can't create an attendee
-         * @todo This is a bit hackish
-         */
         if ($event->tickets->count() === 0) {
             return '<script>showMessage("You need to create a ticket before you can add an attendee.");</script>';
         }
@@ -155,18 +148,22 @@ class EventAttendeesController extends MyBaseController
      * Imports attendees from CSV file
      *
      * @param ImportAttendeeRequest $request
-     * @param ImportAttendeeService $action
-     * @param $event_id
+     * @param ImportAttendeeService $importAttendeeService
+     * @param int $eventId
      * @return \Illuminate\Http\JsonResponse
      */
-    public function postImportAttendee(ImportAttendeeRequest $request, ImportAttendeeService $action, $event_id)
+    public function postImportAttendee(
+        ImportAttendeeRequest $request,
+        ImportAttendeeService $importAttendeeService,
+        $eventId
+    )
     {
-        if ($action->make($request)) {
+        if ($importAttendeeService->handle($request)) {
             session()->flash('message', __('Attendees Successfully Invited'));
             return response()->json([
                 'status' => self::RESPONSE_SUCCESS,
                 'redirectUrl' => route('showEventAttendees', [
-                    'event_id' => $event_id,
+                    'event_id' => $eventId,
                 ]),
             ]);
         }
@@ -178,26 +175,28 @@ class EventAttendeesController extends MyBaseController
     }
 
     /**
-     * @param $event_id
+     * @param int $eventId
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
-    public function showPrintAttendees($event_id)
+    public function showPrintAttendees($eventId)
     {
-        $data['event'] = $this->eventRepository->find($event_id);
-        $data['attendees'] = $data['event']->attendees()->withoutCancelled()->orderBy('first_name')->get();
+        $data['event'] = $this->eventRepository->find($eventId);
+        $data['attendees'] = $data['event']
+            ->attendees()
+            ->withoutCancelled()
+            ->orderBy('first_name')
+            ->get();
 
         return view('ManageEvent.PrintAttendees', $data);
     }
 
     /**
-     * Show the 'Message Attendee' modal
-     *
-     * @param $attendee_id
-     * @return View
+     * @param int $eventId
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
-    public function showMessageAttendee($attendee_id)
+    public function showMessageAttendee($eventId)
     {
-        $attendee = $this->attendeeRepository->find($attendee_id);
+        $attendee = $this->attendeeRepository->find($eventId);
 
         $data = [
             'attendee' => $attendee,
@@ -212,7 +211,7 @@ class EventAttendeesController extends MyBaseController
      *
      * @param MessageAttendeeRequest $request
      * @param MessageAttendeeService $attendeeService
-     * @param $attendeeId
+     * @param int $attendeeId
      * @return \Illuminate\Http\JsonResponse
      */
     public function postMessageAttendee(
@@ -220,7 +219,7 @@ class EventAttendeesController extends MyBaseController
         MessageAttendeeService $attendeeService,
         $attendeeId
     ) {
-        if ($attendeeService->make($request, $attendeeId)) {
+        if ($attendeeService->handle($request, $attendeeId)) {
             return response()->json([
                 'status' => self::RESPONSE_SUCCESS,
                 'message' => __('Message Successfully Sent'),
@@ -233,80 +232,72 @@ class EventAttendeesController extends MyBaseController
         ]);
     }
 
-    /**
-     * Show message attendee modal
-     *
-     * @param $event_id
+    /***
+     * @param int $eventId
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
-    public function showMessageAttendees($event_id)
+    public function showMessageAttendees($eventId)
     {
         $data = [
-            'event' => $this->eventRepository->find($event_id),
-            'tickets' => $this->eventRepository->find($event_id)->tickets()->pluck('title', 'id')->toArray(),
+            'event' => $this->eventRepository->find($eventId),
+            'tickets' => $this->eventRepository->find($eventId)->tickets()->pluck('title', 'id')->toArray(),
         ];
 
         return view('ManageEvent.Modals.MessageAttendees', $data);
     }
 
 
-    /**
-     * Sends a message to attendees
-     *
+    /***
      * @param MessageMultipleAttendeeRequest $request
-     * @param MessageMultipleAttendeeService $service
-     * @param $eventId
+     * @param MessageMultipleAttendeeService $messageMultipleAttendeeService
+     * @param int $eventId
      * @return \Illuminate\Http\JsonResponse
      */
     public function postMessageAttendees(
         MessageMultipleAttendeeRequest $request,
-        MessageMultipleAttendeeService $service,
+        MessageMultipleAttendeeService $messageMultipleAttendeeService,
         $eventId
     ) {
-        $service->make($request, $eventId);
+        $messageMultipleAttendeeService->handle($request, $eventId);
 
         return response()->json([
-            'status' => 'success',
+            'status' => self::RESPONSE_SUCCESS,
             'message' => __('There was an error sending the message'),
         ]);
     }
 
     /**
-     * Downloads the ticket of an attendee as PDF
+     * Download a ticket as PDF
      *
-     * @param $event_id
-     * @param $attendee_id
+     * @param $eventId
+     * @param $attendeeId
+     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
      */
-    public function showExportTicket($event_id, $attendee_id)
+    public function showExportTicket($eventId, $attendeeId)
     {
-        $attendee = Attendee::scope()->findOrFail($attendee_id);
+        $attendee = Attendee::scope()->findOrFail($attendeeId);
 
-        Config::set('queue.default', 'sync');
-        Log::info("*********");
-        Log::info($attendee_id);
-        Log::info($attendee);
+        $this->dispatch(
+            new GenerateTicket($attendee->order->order_reference . "-" . $attendee->reference_index)
+        );
 
+        $pdfFileName = $attendee->order->order_reference . '-' . $attendee->reference_index;
+        $pdfFilePath = public_path(config('attendize.event_pdf_tickets_path')) . '/' . $pdfFileName;
+        $pdfFile = $pdfFilePath . '.pdf';
 
-        $this->dispatch(new GenerateTicket($attendee->order->order_reference . "-" . $attendee->reference_index));
-
-        $pdf_file_name = $attendee->order->order_reference . '-' . $attendee->reference_index;
-        $pdf_file_path = public_path(config('attendize.event_pdf_tickets_path')) . '/' . $pdf_file_name;
-        $pdf_file = $pdf_file_path . '.pdf';
-
-
-        return response()->download($pdf_file);
+        return response()->download($pdfFile);
     }
 
     /**
      * Downloads an export of attendees
      *
-     * @param $event_id
-     * @param string $export_as (xlsx, xls, csv, html)
+     * @param $eventId
+     * @param string $exportAs (xlsx, xls, csv, html)
      */
-    public function showExportAttendees($event_id, $export_as = 'xls')
+    public function showExportAttendees($eventId, $exportAs = 'xls')
     {
 
-        Excel::create('attendees-as-of-' . date('d-m-Y-g.i.a'), function ($excel) use ($event_id) {
+        Excel::create('attendees-as-of-' . date('d-m-Y-g.i.a'), function ($excel) use ($eventId) {
 
             $excel->setTitle('Attendees List');
 
@@ -352,7 +343,7 @@ class EventAttendeesController extends MyBaseController
                     $row->setBackground('#f5f5f5');
                 });
             });
-        })->export($export_as);
+        })->export($exportAs);
     }
 
     /**
@@ -529,7 +520,7 @@ class EventAttendeesController extends MyBaseController
                 }
 
             } catch (\Exception $e) {
-                \Log::error($e);
+                Log::error($e);
                 $error_message = 'There has been a problem processing your refund. Please check your information and try again.';
 
             }
@@ -590,16 +581,14 @@ class EventAttendeesController extends MyBaseController
     }
 
 
-    /**
-     * Show an attendee ticket
-     *
+    /***
      * @param Request $request
-     * @param $attendee_id
+     * @param $attendeeId
      * @return bool
      */
-    public function showAttendeeTicket(Request $request, $attendee_id)
+    public function showAttendeeTicket(Request $request, $attendeeId)
     {
-        $attendee = Attendee::scope()->findOrFail($attendee_id);
+        $attendee = Attendee::scope()->findOrFail($attendeeId);
 
         $data = [
             'order' => $attendee->order,

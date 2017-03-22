@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Attendize\Requests;
+namespace App\Attendize\Requests\Attendee;
 
+use App\Attendize\Requests\BaseRequest;
 
 class ImportAttendeeRequest extends BaseRequest
 {

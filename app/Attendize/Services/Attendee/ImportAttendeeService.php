@@ -16,94 +16,176 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class ImportAttendeeService
 {
-    public function make(Request $request)
+    public function handle(Request $request)
     {
-        $ticket_id = $request->get('ticket_id');
-        $ticket_price = 0;
-        $num_added = 0;
-        $email_attendee = $request->get('email_ticket');
-        $event_id = $request->event_id;
+        $ticketId = $request->get('ticket_id');
+        $ticketPrice = 0;
+        $sendEmailToAttendee = $request->get('email_ticket');
+        $eventId = $request->event_id;
+
         DB::beginTransaction();
 
         try {
+            $fileRows = Excel::load($request->file('attendees_list')->getRealPath(), function ($reader) {
+            })->get();
 
-            if ($request->file('attendees_list')) {
-
-                $the_file = Excel::load($request->file('attendees_list')
-                    ->getRealPath(), function ($reader) {
-                })->get();
-
-                foreach ($the_file as $rows) {
-                    if (!empty($rows['first_name']) && !empty($rows['last_name']) && !empty($rows['email'])) {
-                        $num_added++;
-                        $attendee_first_name = $rows['first_name'];
-                        $attendee_last_name = $rows['last_name'];
-                        $attendee_email = $rows['email'];
-
-                        /**
-                         * Create the order
-                         */
-                        $order = new Order();
-                        $order->first_name = $attendee_first_name;
-                        $order->last_name = $attendee_last_name;
-                        $order->email = $attendee_email;
-                        $order->order_status_id = config('attendize.order_complete');
-                        $order->amount = $ticket_price;
-                        $order->account_id = Auth::user()->account_id;
-                        $order->event_id = $event_id;
-                        $order->save();
-
-                        /**
-                         * Update qty sold
-                         */
-                        $ticket = Ticket::scope()->find($ticket_id);
-                        $ticket->increment('quantity_sold');
-                        $ticket->increment('sales_volume', $ticket_price);
-                        $ticket->event->increment('sales_volume', $ticket_price);
-
-                        /**
-                         * Insert order item
-                         */
-                        $orderItem = new OrderItem();
-                        $orderItem->title = $ticket->title;
-                        $orderItem->quantity = 1;
-                        $orderItem->order_id = $order->id;
-                        $orderItem->unit_price = $ticket_price;
-                        $orderItem->save();
-
-                        /**
-                         * Update the event stats
-                         */
-                        $event_stats = new EventStats();
-                        $event_stats->updateTicketsSoldCount($event_id, 1);
-                        $event_stats->updateTicketRevenue($ticket_id, $ticket_price);
-
-                        /**
-                         * Create the attendee
-                         */
-                        $attendee = new Attendee();
-                        $attendee->first_name = $attendee_first_name;
-                        $attendee->last_name = $attendee_last_name;
-                        $attendee->email = $attendee_email;
-                        $attendee->event_id = $event_id;
-                        $attendee->order_id = $order->id;
-                        $attendee->ticket_id = $ticket_id;
-                        $attendee->account_id = Auth::user()->account_id;
-                        $attendee->reference_index = 1;
-                        $attendee->save();
-
-                        if ($email_attendee == '1') {
-                            dispatch(new SendAttendeeInvite($attendee));
-                        }
-                    }
-                };
-            }
-
+            foreach ($fileRows as $currentFileRow) {
+                $this->handleAttendeeImport($currentFileRow, $ticketPrice, $eventId, $ticketId,
+                    $sendEmailToAttendee);
+            };
             DB::commit();
             return true;
         } catch (Exception $exception) {
             DB::rollback();
             return false;
         }
+    }
+
+    /**
+     * @param $attendeeFirstName
+     * @param $attendeeLastName
+     * @param $attendeeEmail
+     * @param $eventId
+     * @param $order
+     * @param $ticketId
+     * @return Attendee
+     */
+    private function createAttendee(
+        $attendeeFirstName,
+        $attendeeLastName,
+        $attendeeEmail,
+        $eventId,
+        $order,
+        $ticketId
+    ) {
+        $attendee = new Attendee();
+        $attendee->first_name = $attendeeFirstName;
+        $attendee->last_name = $attendeeLastName;
+        $attendee->email = $attendeeEmail;
+        $attendee->event_id = $eventId;
+        $attendee->order_id = $order->id;
+        $attendee->ticket_id = $ticketId;
+        $attendee->account_id = Auth::user()->account_id;
+        $attendee->reference_index = 1;
+        $attendee->save();
+
+        return $attendee;
+    }
+
+    /**
+     * @param $eventId
+     * @param $ticketId
+     * @param $ticketPrice
+     */
+    private function updateEventStats($eventId, $ticketId, $ticketPrice)
+    {
+        $event_stats = new EventStats();
+        $event_stats->updateTicketsSoldCount($eventId, 1);
+        $event_stats->updateTicketRevenue($ticketId, $ticketPrice);
+    }
+
+    /**
+     * @param $ticket
+     * @param $order
+     * @param $ticketPrice
+     */
+    private function createOrderItem($ticket, $order, $ticketPrice)
+    {
+        $orderItem = new OrderItem();
+        $orderItem->title = $ticket->title;
+        $orderItem->quantity = 1;
+        $orderItem->order_id = $order->id;
+        $orderItem->unit_price = $ticketPrice;
+        $orderItem->save();
+    }
+
+    /**
+     * @param Ticket $ticket
+     * @param $ticketPrice
+     * @return Ticket
+     */
+    private function updateTicketsQuantitySold(Ticket $ticket, $ticketPrice)
+    {
+        $ticket->increment('quantity_sold');
+        $ticket->increment('sales_volume', $ticketPrice);
+        $ticket->event->increment('sales_volume', $ticketPrice);
+
+        return $ticket;
+    }
+
+    /**
+     * @param $attendeeFirstName
+     * @param $attendeeLastName
+     * @param $attendeeEmail
+     * @param $ticketPrice
+     * @param $eventId
+     * @return Order
+     */
+    private function createOrder($attendeeFirstName, $attendeeLastName, $attendeeEmail, $ticketPrice, $eventId)
+    {
+        $order = new Order();
+        $order->first_name = $attendeeFirstName;
+        $order->last_name = $attendeeLastName;
+        $order->email = $attendeeEmail;
+        $order->order_status_id = config('attendize.order_complete');
+        $order->amount = $ticketPrice;
+        $order->account_id = Auth::user()->account_id;
+        $order->event_id = $eventId;
+        $order->save();
+
+        return $order;
+    }
+
+    /**
+     * @param $csvFileRow
+     * @param $ticketPrice
+     * @param $eventId
+     * @param $ticketId
+     * @param $sendEmailToAttendee
+     */
+    private function handleAttendeeImport($csvFileRow, $ticketPrice, $eventId, $ticketId, $sendEmailToAttendee)
+    {
+        if ($this->isRowDataValid($csvFileRow)) {
+            $attendeeFirstName = $csvFileRow['first_name'];
+            $attendeeLastName = $csvFileRow['last_name'];
+            $attendeeEmail = $csvFileRow['email'];
+
+            $order = $this->createOrder(
+                $attendeeFirstName,
+                $attendeeLastName,
+                $attendeeEmail,
+                $ticketPrice,
+                $eventId
+            );
+
+            $ticket = Ticket::scope()->find($ticketId);
+
+            $this->updateTicketsQuantitySold($ticket, $ticketPrice);
+
+            $attendee = $this->createAttendee(
+                $attendeeFirstName,
+                $attendeeLastName,
+                $attendeeEmail,
+                $eventId,
+                $order,
+                $ticketId
+            );
+
+            $this->createOrderItem($ticket, $order, $ticketPrice);
+            $this->updateEventStats($eventId, $ticketId, $ticketPrice);
+
+            if ($sendEmailToAttendee == '1') {
+                dispatch(new SendAttendeeInvite($attendee));
+            }
+        }
+    }
+
+    /**
+     * @param array $csvFileRow
+     * @return bool
+     */
+    private function isRowDataValid(array $csvFileRow)
+    {
+        return !empty($csvFileRow['first_name']) && !empty($csvFileRow['last_name']) && !empty($csvFileRow['email']);
     }
 }

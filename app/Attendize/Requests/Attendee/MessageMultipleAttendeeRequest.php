@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Attendize\Requests;
+namespace App\Attendize\Requests\Attendee;
 
 class MessageMultipleAttendeeRequest extends BaseRequest
 {

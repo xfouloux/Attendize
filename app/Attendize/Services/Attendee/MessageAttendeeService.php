@@ -6,7 +6,7 @@ use App\Http\Requests\Request;
 
 class MessageAttendeeService
 {
-    public function make(Request $request, $attendeeId)
+    public function handle(Request $request, $attendeeId)
     {
         $attendee = $this->attendeeRepository->find($attendeeId);
 

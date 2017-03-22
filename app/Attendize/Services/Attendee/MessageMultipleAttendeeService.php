@@ -8,7 +8,7 @@ use App\Models\Message;
 
 class MessageMultipleAttendeeService
 {
-    public function make(Request $request, $eventId)
+    public function handle(Request $request, $eventId)
     {
         $message = Message::createNew();
         $message->message = $request->get('message');
