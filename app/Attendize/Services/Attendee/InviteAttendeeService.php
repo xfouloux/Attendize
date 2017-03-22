@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Log;
 
 class InviteAttendeeService
 {
-    public function make(Request $request)
+    public function handle(Request $request)
     {
         $ticket_id = $request->get('ticket_id');
         $ticket_price = 0;

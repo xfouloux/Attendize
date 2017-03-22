@@ -8,10 +8,10 @@ use App\Attendize\Requests\ImportAttendeeRequest;
 use App\Attendize\Requests\InviteAttendeeRequest;
 use App\Attendize\Requests\MessageAttendeeRequest;
 use App\Attendize\Requests\MessageMultipleAttendeeRequest;
-use App\Attendize\Services\ImportAttendeeService;
-use App\Attendize\Services\InviteAttendeeService;
-use App\Attendize\Services\MessageAttendeeService;
-use App\Attendize\Services\MessageMultipleAttendeeService;
+use App\Attendize\Services\Attendee\ImportAttendeeService;
+use App\Attendize\Services\Attendee\InviteAttendeeService;
+use App\Attendize\Services\Attendee\MessageAttendeeService;
+use App\Attendize\Services\Attendee\MessageMultipleAttendeeService;
 use App\Jobs\GenerateTicket;
 use App\Jobs\SendAttendeeTicket;
 use App\Models\Attendee;
@@ -88,10 +88,6 @@ class EventAttendeesController extends MyBaseController
     {
         $event = $this->eventRepository->find($eventId);
 
-        /*
-         * If there are no tickets then we can't create an attendee
-         * @todo This is a bit hackish
-         */
         if ($event->tickets->count() === 0) {
             return '<script>showMessage("You need to create a ticket before you can invite an attendee.");</script>';
         }
@@ -103,16 +99,19 @@ class EventAttendeesController extends MyBaseController
     }
 
     /**
-     * Invite an attendee
-     *
      * @param InviteAttendeeRequest $request
+     * @param InviteAttendeeService $inviteAttendeeService
      * @param $eventId
-     * @return mixed
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function postInviteAttendee(InviteAttendeeRequest $request, InviteAttendeeService $action, $eventId)
+    public function postInviteAttendee(
+        InviteAttendeeRequest $request,
+        InviteAttendeeService $inviteAttendeeService,
+        $eventId
+    )
     {
-        if ($action->make($request)) {
-            session()->flash('message', 'Attendee Successfully Invited');
+        if ($inviteAttendeeService->handle($request)) {
+            session()->flash('message', __('Attendee Successfully Invited'));
 
             return response()->json([
                 'status' => self::RESPONSE_SUCCESS,
