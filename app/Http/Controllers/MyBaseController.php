@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Event;
 use App\Models\Organiser;
-use Auth;
+use Illuminate\Support\Facades\Auth;
 use JavaScript;
 use View;
 

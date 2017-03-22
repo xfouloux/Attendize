@@ -132,6 +132,10 @@ class MyBaseModel extends \Illuminate\Database\Eloquent\Model
      */
     public function scopeScope($query, $accountId = false)
     {
+        if (!$accountId) {
+            $accountId = Auth::user()->account_id;
+        }
+
         $table = $this->getTable();
 
         $query->where(function ($query) use ($accountId, $table) {
