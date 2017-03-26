@@ -11,18 +11,35 @@ class EventRepository extends Repository implements RepositoryInterface
         parent::__construct(new Event);
     }
 
-    public function getAttendees($sortBy = null, $sortOrder = self::DEFAULT_SORT_ORDER)
+    /**
+     * @param Event $event
+     * @param null $sortBy
+     * @param string $sortOrder
+     * @return mixed
+     */
+    public function getAttendees(Event $event, $sortBy = null, $sortOrder = self::DEFAULT_SORT_ORDER)
     {
         return (new AttendeeRepository())
-            ->getAttendeesByEvent($this->model->id, $sortBy, $sortOrder);
+            ->getAttendeesByEvent($event, $sortBy, $sortOrder);
     }
 
-    public function getAttendeesByTerm($searchQuery, $sortBy = null, $sortOrder = self::DEFAULT_SORT_ORDER)
-    {
+    /**
+     * @param Event $event
+     * @param $searchQuery
+     * @param null $sortBy
+     * @param string $sortOrder
+     * @return mixed
+     */
+    public function getAttendeesByTerm(
+        Event $event,
+        $searchQuery,
+        $sortBy = null,
+        $sortOrder = self::DEFAULT_SORT_ORDER
+    ) {
         return (new AttendeeRepository())
             ->getAttendeesByEventTerm(
                 $searchQuery,
-                $this->model->id,
+                $event,
                 $sortBy,
                 $sortOrder
             );

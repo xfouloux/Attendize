@@ -61,9 +61,9 @@ class EventAttendeesController extends MyBaseController
         $event = $this->eventRepository->find($event_id);
 
         if ($searchQuery) {
-            $attendees = $this->eventRepository->getAttendeesByTerm($searchQuery, $sort_by, $sort_order);
+            $attendees = $this->eventRepository->getAttendeesByTerm($event, $searchQuery, $sort_by, $sort_order);
         } else {
-            $attendees = $this->eventRepository->getAttendees($sort_by, $sort_order);
+            $attendees = $this->eventRepository->getAttendees($event, $sort_by, $sort_order);
         }
 
         $data = [
@@ -126,7 +126,7 @@ class EventAttendeesController extends MyBaseController
         ]);
     }
 
-    /***
+    /**
      * @param int $event_id
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View|string
      */
@@ -273,7 +273,7 @@ class EventAttendeesController extends MyBaseController
      * @param $attendeeId
      * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
      */
-    public function showExportTicket($eventId, $attendeeId)
+    public function showDownloadTicketAsPDF($eventId, $attendeeId)
     {
         $attendee = Attendee::scope()->findOrFail($attendeeId);
 

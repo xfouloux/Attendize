@@ -446,9 +446,9 @@ Route::group(['middleware' => ['auth', 'first.run']], function () {
             'uses' => 'EventAttendeesController@showPrintAttendees',
         ]);
 
-        Route::get('{event_id}/attendees/{attendee_id}/export_ticket', [
-            'as' => 'showExportTicket',
-            'uses' => 'EventAttendeesController@showExportTicket',
+        Route::get('{event_id}/attendees/{attendee_id}/download_ticket_as_pdf', [
+            'as' => 'showDownloadTicketAsPDF',
+            'uses' => 'EventAttendeesController@showDownloadTicketAsPDF',
         ]);
 
         Route::get('{event_id}/attendees/{attendee_id}/ticket', [

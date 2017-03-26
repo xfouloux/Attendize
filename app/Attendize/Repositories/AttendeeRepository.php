@@ -3,6 +3,7 @@
 namespace App\Attendize\Repositories;
 
 use App\Models\Attendee;
+use App\Models\Event;
 
 class AttendeeRepository extends Repository implements RepositoryInterface
 {
@@ -11,21 +12,34 @@ class AttendeeRepository extends Repository implements RepositoryInterface
         parent::__construct(new Attendee);
     }
 
-    public function getAttendeesByEvent($eventId, $sortBy = null, $sortOrder = self::DEFAULT_SORT_ORDER)
+    /**
+     * @param Event $event
+     * @param null $sortBy
+     * @param string $sortOrder
+     * @return mixed
+     */
+    public function getAttendeesByEvent(Event $event, $sortBy = null, $sortOrder = self::DEFAULT_SORT_ORDER)
     {
         $attendees = $this->model
             ->join('orders', 'orders.id', '=', 'attendees.order_id')
             ->withoutCancelled()
             ->orderBy(($sortBy == 'order_reference' ? 'orders.' : 'attendees.') . $sortBy, $sortOrder)
             ->select('attendees.*', 'orders.order_reference')
-            ->where('attendees.event_id', $eventId)
+            ->where('attendees.event_id', $event->id)
             ->paginate();
 
         return $attendees;
     }
 
+    /**
+     * @param Event $event
+     * @param $searchQuery
+     * @param null $sortBy
+     * @param string $sortOrder
+     * @return mixed
+     */
     public function getAttendeesByEventTerm(
-        $eventId,
+        Event $event,
         $searchQuery,
         $sortBy = null,
         $sortOrder = self::DEFAULT_SORT_ORDER
@@ -41,7 +55,7 @@ class AttendeeRepository extends Repository implements RepositoryInterface
             })
             ->orderBy(($sortBy == 'order_reference' ? 'orders.' : 'attendees.') . $sortBy, $sortOrder)
             ->select('attendees.*', 'orders.order_reference')
-            ->where('attendees.event_id', $eventId)
+            ->where('attendees.event_id', $event->id)
             ->paginate();
 
         return $attendees;
