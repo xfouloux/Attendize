@@ -2,10 +2,19 @@
 
 namespace App\Attendize\Services\Attendee;
 
+use App\Attendize\Repositories\AttendeeRepository;
 use App\Http\Requests\Request;
+use Illuminate\Support\Facades\Mail;
 
 class MessageAttendeeService
 {
+    private $attendeeRepository;
+
+    public function __construct(AttendeeRepository $attendeeRepository)
+    {
+        $this->attendeeRepository = $attendeeRepository;
+    }
+
     public function handle(Request $request, $attendeeId)
     {
         $attendee = $this->attendeeRepository->find($attendeeId);

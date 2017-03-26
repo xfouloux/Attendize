@@ -176,7 +176,7 @@ class EventAttendeesController extends MyBaseController
 
     /**
      * @param int $eventId
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     * @return \Illuminate\View\View
      */
     public function showPrintAttendees($eventId)
     {
