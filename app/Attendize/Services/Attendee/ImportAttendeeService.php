@@ -19,9 +19,9 @@ class ImportAttendeeService
     public function handle(Request $request)
     {
         $ticketId = $request->get('ticket_id');
-        $ticketPrice = 0;
         $sendEmailToAttendee = $request->get('email_ticket');
         $eventId = $request->event_id;
+        $ticketPrice = 0;
 
         DB::beginTransaction();
 
@@ -36,6 +36,7 @@ class ImportAttendeeService
             DB::commit();
             return true;
         } catch (Exception $exception) {
+            logger()->error($exception->getMessage());
             DB::rollback();
             return false;
         }
@@ -85,11 +86,11 @@ class ImportAttendeeService
     }
 
     /**
-     * @param $ticket
-     * @param $order
+     * @param Ticket $ticket
+     * @param Order $order
      * @param $ticketPrice
      */
-    private function createOrderItem($ticket, $order, $ticketPrice)
+    private function createOrderItem(Ticket $ticket, Order $order, $ticketPrice)
     {
         $orderItem = new OrderItem();
         $orderItem->title = $ticket->title;
@@ -184,8 +185,8 @@ class ImportAttendeeService
      * @param array $csvFileRow
      * @return bool
      */
-    private function isRowDataValid(array $csvFileRow)
+    private function isRowDataValid($csvFileRow)
     {
-        return !empty($csvFileRow['first_name']) && !empty($csvFileRow['last_name']) && !empty($csvFileRow['email']);
+        return !empty($csvFileRow->first_name) && !empty($csvFileRow->last_name) && !empty($csvFileRow->email);
     }
 }
