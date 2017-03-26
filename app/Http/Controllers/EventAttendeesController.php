@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Attendize\Repositories\AttendeeRepository;
 use App\Attendize\Repositories\EventRepository;
+use App\Attendize\Requests\Attendee\ExportAttendeesRequest;
 use App\Attendize\Requests\Attendee\ImportAttendeeRequest;
 use App\Attendize\Requests\Attendee\InviteAttendeeRequest;
 use App\Attendize\Requests\Attendee\MessageAttendeeRequest;
 use App\Attendize\Requests\Attendee\MessageMultipleAttendeeRequest;
+use App\Attendize\Services\Attendee\ExportAttendeesService;
 use App\Attendize\Services\Attendee\ImportAttendeeService;
 use App\Attendize\Services\Attendee\InviteAttendeeService;
 use App\Attendize\Services\Attendee\MessageAttendeeService;
@@ -210,16 +212,16 @@ class EventAttendeesController extends MyBaseController
      * Send message to attendee
      *
      * @param MessageAttendeeRequest $request
-     * @param MessageAttendeeService $attendeeService
+     * @param MessageAttendeeService $messageAttendeeService
      * @param int $attendeeId
      * @return \Illuminate\Http\JsonResponse
      */
     public function postMessageAttendee(
         MessageAttendeeRequest $request,
-        MessageAttendeeService $attendeeService,
+        MessageAttendeeService $messageAttendeeService,
         $attendeeId
     ) {
-        if ($attendeeService->handle($request, $attendeeId)) {
+        if ($messageAttendeeService->handle($request, $attendeeId)) {
             return response()->json([
                 'status' => self::RESPONSE_SUCCESS,
                 'message' => __('Message Successfully Sent'),
@@ -275,7 +277,7 @@ class EventAttendeesController extends MyBaseController
      */
     public function showDownloadTicketAsPDF($eventId, $attendeeId)
     {
-        $attendee = Attendee::scope()->findOrFail($attendeeId);
+        $attendee = $this->attendeeRepository->find($attendeeId);
 
         $this->dispatch(
             new GenerateTicket($attendee->order->order_reference . "-" . $attendee->reference_index)
@@ -294,56 +296,13 @@ class EventAttendeesController extends MyBaseController
      * @param $eventId
      * @param string $exportAs (xlsx, xls, csv, html)
      */
-    public function showExportAttendees($eventId, $exportAs = 'xls')
+    public function showExportAttendees(
+        ExportAttendeesRequest $exportAttendeesRequest,
+        ExportAttendeesService $exportAttendeesService,
+        $eventId,
+        $exportAs = ExportAttendeesService::DEFAULT_EXPORT_FILE_TYPE)
     {
-
-        Excel::create('attendees-as-of-' . date('d-m-Y-g.i.a'), function ($excel) use ($eventId) {
-
-            $excel->setTitle('Attendees List');
-
-            // Chain the setters
-            $excel->setCreator(config('attendize.app_name'))
-                ->setCompany(config('attendize.app_name'));
-
-            $excel->sheet('attendees_sheet_1', function ($sheet) use ($event_id) {
-
-                DB::connection()->setFetchMode(\PDO::FETCH_ASSOC);
-                $data = DB::table('attendees')
-                    ->where('attendees.event_id', '=', $event_id)
-                    ->where('attendees.is_cancelled', '=', 0)
-                    ->where('attendees.account_id', '=', Auth::user()->account_id)
-                    ->join('events', 'events.id', '=', 'attendees.event_id')
-                    ->join('orders', 'orders.id', '=', 'attendees.order_id')
-                    ->join('tickets', 'tickets.id', '=', 'attendees.ticket_id')
-                    ->select([
-                        'attendees.first_name',
-                        'attendees.last_name',
-                        'attendees.email',
-                        'orders.order_reference',
-                        'tickets.title',
-                        'orders.created_at',
-                        DB::raw("(CASE WHEN attendees.has_arrived THEN 'YES' ELSE 'NO' END) AS has_arrived"),
-                        'attendees.arrival_time',
-                    ])->get();
-
-                $sheet->fromArray($data);
-                $sheet->row(1, [
-                    'First Name',
-                    'Last Name',
-                    'Email',
-                    'Order Reference',
-                    'Ticket Type',
-                    'Purchase Date',
-                    'Has Arrived',
-                    'Arrival Time',
-                ]);
-
-                // Set gray background on first row
-                $sheet->row(1, function ($row) {
-                    $row->setBackground('#f5f5f5');
-                });
-            });
-        })->export($exportAs);
+        $exportAttendeesService->handle($exportAttendeesRequest);
     }
 
     /**

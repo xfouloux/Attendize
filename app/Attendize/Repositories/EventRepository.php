@@ -35,7 +35,8 @@ class EventRepository extends Repository implements RepositoryInterface
         $searchQuery,
         $sortBy = null,
         $sortOrder = self::DEFAULT_SORT_ORDER
-    ) {
+    )
+    {
         return (new AttendeeRepository())
             ->getAttendeesByEventTerm(
                 $searchQuery,
