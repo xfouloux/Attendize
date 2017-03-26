@@ -2,6 +2,8 @@
 
 namespace App\Attendize\Requests\Attendee;
 
+use App\Attendize\Requests\BaseRequest;
+
 class MessageAttendeeRequest extends BaseRequest
 {
     public function authorize()
