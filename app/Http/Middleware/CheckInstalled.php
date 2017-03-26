@@ -22,7 +22,7 @@ class CheckInstalled
         /*
          * Check if the 'installed' file has been created
          */
-        if (!file_exists(base_path('installed')) && !Utils::isAttendize()) {
+        if (!file_exists(base_path('installed')) && !Utils::isAppSAAS()) {
             return Redirect::to('install');
         }
 

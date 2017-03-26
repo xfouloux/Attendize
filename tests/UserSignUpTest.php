@@ -22,7 +22,7 @@ class UserSignUpTest extends TestCase
             ->type('password', 'password_confirmation');
 
         // Add checkbox submission for attendize (dev/cloud) only
-        if (Utils::isAttendize()) {
+        if (Utils::isAppSAAS()) {
             $this->check('terms_agreed');
         }
 

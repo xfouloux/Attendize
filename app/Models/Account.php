@@ -163,7 +163,7 @@ class Account extends MyBaseModel
      */
     public function getStripeApiKeyAttribute()
     {
-        if (Utils::isAttendize()) {
+        if (Utils::isAppSAAS()) {
             return $this->stripe_access_token;
         }
 

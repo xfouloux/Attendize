@@ -16,7 +16,7 @@ class UserSignupController extends Controller
 
     public function __construct(Guard $auth)
     {
-        if (Account::count() > 0 && !Utils::isAttendize()) {
+        if (Account::count() > 0 && !Utils::isAppSAAS()) {
             return redirect()->route('login');
         }
 
@@ -26,7 +26,7 @@ class UserSignupController extends Controller
 
     public function showSignup()
     {
-        $is_attendize = Utils::isAttendize();
+        $is_attendize = Utils::isAppSAAS();
         return view('Public.LoginAndRegister.Signup', compact('is_attendize'));
     }
 
@@ -39,7 +39,7 @@ class UserSignupController extends Controller
      */
     public function postSignup(Request $request)
     {
-        $is_attendize = Utils::isAttendize();
+        $is_attendize = Utils::isAppSAAS();
         $this->validate($request, [
             'email' => 'required|email|unique:users',
             'password' => 'required|min:5|confirmed',

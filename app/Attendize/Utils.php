@@ -2,34 +2,29 @@
 
 namespace App\Attendize;
 
-use Auth;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
 use PhpSpec\Exception\Exception;
 
 class Utils
 {
     /**
-     * Check if the current user is registered
-     *
      * @return bool
      */
-    public static function isRegistered()
+    public static function isCurrentUserRegistered()
     {
         return Auth::check() && Auth::user()->is_registered;
     }
 
     /**
-     * Check if the current user is confirmed
-     *
      * @return bool
      */
-    public static function isConfirmed()
+    public static function isCurrentUserConfirmed()
     {
         return Auth::check() && Auth::user()->is_confirmed;
     }
 
-    /**
-     * Check if the DB has been set up
-     *
+    /***
      * @return bool
      */
     public static function isDatabaseSetup()
@@ -38,24 +33,20 @@ class Utils
             if (Schema::hasTable('accounts')) {
                 return true;
             }
-        } catch (\Exception $e) {
-            return false;
-        }
+        } catch (\Exception $e) {}
+
+        return false;
     }
 
     /**
-     * Are we the cloud version of attendize or in dev enviornment?
-     *
      * @return bool
      */
-    public static function isAttendize()
+    public static function isAppSAAS()
     {
-        return self::isAttendizeCloud() || self::isAttendizeDev();
+        return self::isAttendizeCloud() || self::isCurrentEnvironmentDev();
     }
 
-    /**
-     * Are we the cloud version of Attendize?
-     *
+    /***
      * @return bool
      */
     public static function isAttendizeCloud()
@@ -64,16 +55,14 @@ class Utils
     }
 
     /**
-     * Are we in a dev enviornment?
-     *
      * @return bool
      */
-    public static function isAttendizeDev()
+    public static function isCurrentEnvironmentDev()
     {
         return isset($_ENV['ATTENDIZE_DEV']) && $_ENV['ATTENDIZE_DEV'] == 'true';
     }
 
-    public static function isDownForMaintenance()
+    public static function isSiteDownForMaintenance()
     {
         return file_exists(storage_path() . '/framework/down');
     }
@@ -115,11 +104,11 @@ class Utils
 
         if ($max_size < 0) {
             // Start with post_max_size.
-            $max_size = self::parse_size(ini_get('post_max_size'));
+            $max_size = self::parseFileSize(ini_get('post_max_size'));
 
             // If upload_max_size is less, then reduce. Except if upload_max_size is
             // zero, which indicates no limit.
-            $upload_max = self::parse_size(ini_get('upload_max_filesize'));
+            $upload_max = self::parseFileSize(ini_get('upload_max_filesize'));
             if ($upload_max > 0 && $upload_max < $max_size) {
                 $max_size = $upload_max;
             }
@@ -128,21 +117,19 @@ class Utils
         return $max_size;
     }
 
-    /**
-     * Parses the given size
-     *
-     * @param $size
+    /***
+     * @param string $fileSizeString
      * @return float
      */
-    public static function parse_size($size)
+    public static function parseFileSize($fileSizeString)
     {
-        $unit = preg_replace('/[^bkmgtpezy]/i', '', $size); // Remove the non-unit characters from the size.
-        $size = preg_replace('/[^0-9\.]/', '', $size); // Remove the non-numeric characters from the size.
+        $unit = preg_replace('/[^bkmgtpezy]/i', '', $fileSizeString); // Remove the non-unit characters from the size.
+        $fileSizeString = preg_replace('/[^0-9\.]/', '', $fileSizeString); // Remove the non-numeric characters from the size.
         if ($unit) {
             // Find the position of the unit in the ordered string which is the power of magnitude to multiply a kilobyte by.
-            return round($size * pow(1024, stripos('bkmgtpezy', $unit[0])));
+            return round($fileSizeString * pow(1024, stripos('bkmgtpezy', $unit[0])));
         } else {
-            return round($size);
+            return round($fileSizeString);
         }
     }
 }
