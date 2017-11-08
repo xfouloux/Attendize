@@ -51,7 +51,7 @@
                                         </td>
                                         <td class="valign-top text-center"><span class="bold">{{$order_item->quantity}}</span></td>
                                         <td class="valign-top text-center"><span class="bold">{{$order_item->unit_price}}</span></td>
-                                        <td class="valign-top text-center"><span class="text-primary bold">€{{$order_item->unit_price * $order_item->quantity}}</span></td>
+                                        <td class="valign-top text-center"><span class="text-primary bold">XPF {{$order_item->unit_price * $order_item->quantity}}</span></td>
                                     </tr>
                                     @endforeach
                                 </tbody>
