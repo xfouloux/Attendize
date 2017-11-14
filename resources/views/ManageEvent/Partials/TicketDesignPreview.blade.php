@@ -33,7 +33,7 @@
         <h4>Attendee Ref.</h4>
         #YLY9U73-1
         <h4>Price</h4>
-        €XX.XX
+        XPF XX.XX
     </div>
 
     <div class="barcode">
