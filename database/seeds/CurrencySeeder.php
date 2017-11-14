@@ -534,7 +534,7 @@ class CurrencySeeder extends Seeder
                 'thousand_point' => ',',
                 'status' => 1,
                 'created_at' => '2015-07-22 23:25:30',
-                'updated_at' => '2015-07-22 23:25:30,
+                'updated_at' => '2015-07-22 23:25:30',
             ],
         ];
 
